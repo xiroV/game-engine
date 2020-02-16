@@ -5,7 +5,7 @@
 using namespace std;
 
 enum Action {
-    MoveLeft,
+    MoveLeft = 1,
     MoveRight,
     Jump,
     Attack
@@ -13,8 +13,8 @@ enum Action {
 
 typedef map<SDL_Keycode, Action> KeyMap;
 
-void handle_keypress(SDL_Keycode key);
 bool handle_input(KeyMap &map);
+const string keypress_to_name(Action a);
 bool bind_key(Action action, KeyMap &map);
 
 int main() {
@@ -33,7 +33,7 @@ int main() {
     // Poll for keys:
     for (int keyInt = MoveLeft; keyInt != Attack + 1; keyInt++) {
         Action key = static_cast<Action>(keyInt);
-        cout << "Polling for " << key << endl;
+        cout << "Polling for " << keypress_to_name(key) << endl;
         if (!bind_key(key, mapRef)) {
             cout << "Quitting" << endl;
             goto quit;
@@ -63,7 +63,7 @@ bool bind_key(Action action, KeyMap &map) {
                 case SDL_KEYDOWN:
                     if (e.key.keysym.sym == SDLK_ESCAPE) return false; 
                     map[e.key.keysym.sym] = action;
-                    cout << action << " is bound to " << e.key.keysym.sym << endl;
+                    cout << keypress_to_name(action) << " is bound to " << SDL_GetKeyName(e.key.keysym.sym) << endl;
                     return true;
             }
         }
@@ -74,19 +74,26 @@ bool handle_input(KeyMap &map) {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
         switch (e.type) {
-            switch (e.key.keysym.sym) {
             case SDL_KEYDOWN:
-                if (SDLK_ESCAPE == e.key.keysym.sym)
-                    return false;
-            case SDL_KEYUP:
-                handle_keypress(e.key.keysym.sym);
-                break;
-            }
+                if (e.key.keysym.sym == SDLK_ESCAPE) return false;
+                cout << "Pressed " << keypress_to_name(map[e.key.keysym.sym]) << endl;
+                
         }
     }
     return true;
 }
 
-void handle_keypress(int i) {
-    return;
+const string keypress_to_name(Action a) {
+    switch (a) {
+        case MoveLeft:
+            return "MoveLeft";            
+        case MoveRight:
+            return "MoveRight";
+        case Jump:
+            return "Jump";
+        case Attack:
+            return "Attack";
+        default:
+            return "Not mapped";
+    }
 }
