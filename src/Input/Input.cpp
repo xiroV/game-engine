@@ -11,9 +11,7 @@ enum Action {
     Attack
 };
 
-Input::Input(KeyMap &map): new map() {
-    this.map = map;
-}
+Input::Input(KeyMap &map): map { map } {}
 
 Input::~Input() {
     // Free map?
