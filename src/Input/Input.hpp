@@ -11,6 +11,6 @@ class Input {
         KeyMap &map;
         Input(KeyMap &map);
         ~Input();
-        bind_key(Action action);
+        void bind_key(Action action);
         
 };

@@ -4,13 +4,6 @@
 
 using namespace std;
 
-enum Action {
-    MoveLeft = 1,
-    MoveRight,
-    Jump,
-    Attack
-};
-
 int main() {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_Window *window;

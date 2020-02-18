@@ -1,7 +1,17 @@
 #include <SDL2/SDL.h>
 #include "Input.hpp"
+#include <iostream>
 
-Input::Input(KeyMap &map) {
+using namespace std;
+
+enum Action {
+    MoveLeft = 1,
+    MoveRight,
+    Jump,
+    Attack
+};
+
+Input::Input(KeyMap &map): new map() {
     this.map = map;
 }
 
@@ -10,17 +20,16 @@ Input::~Input() {
 }
 
 
-void Input::bind_key(Action action, KeyMap &map) {
+void Input::bind_key(Action action) {
     SDL_Event e;
 
     while (true) {
         while (SDL_PollEvent(&e)) {
             switch (e.type) {
                 case SDL_KEYDOWN:
-                    if (e.key.keysym.sym == SDLK_ESCAPE) return false; 
+                    if (e.key.keysym.sym == SDLK_ESCAPE) exit(0); 
                     map[e.key.keysym.sym] = action;
                     cout << keypress_to_name(action) << " is bound to " << SDL_GetKeyName(e.key.keysym.sym) << endl;
-                    return true;
             }
         }
     }
