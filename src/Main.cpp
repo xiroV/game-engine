@@ -2,6 +2,8 @@
 #include <SDL2/SDL.h>
 #include <map>
 
+#include "Input/Input.hpp"
+
 using namespace std;
 
 int main() {
@@ -16,6 +18,7 @@ int main() {
     auto &mapRef = map;
 
     const Uint8 *state = SDL_GetKeyboardState(NULL);
+    printf("No more unused: %s\n", state);
 
     cout << "Finished binding keys" << endl;
 
@@ -25,7 +28,6 @@ int main() {
         }
     }
 
-    quit:
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;

@@ -1,21 +1,13 @@
 #include <SDL2/SDL.h>
-#include "Input.hpp"
 #include <iostream>
+#include <map>
+#include "Input.hpp"
 
 using namespace std;
 
-enum Action {
-    MoveLeft = 1,
-    MoveRight,
-    Jump,
-    Attack
-};
+Input::Input(KeyMap &map) : map{map} {}
 
-Input::Input(KeyMap &map): map { map } {}
-
-Input::~Input() {
-    // Free map?
-}
+Input::~Input() {}
 
 
 void Input::bind_key(Action action) {
@@ -25,7 +17,10 @@ void Input::bind_key(Action action) {
         while (SDL_PollEvent(&e)) {
             switch (e.type) {
                 case SDL_KEYDOWN:
-                    if (e.key.keysym.sym == SDLK_ESCAPE) exit(0); 
+                    if (e.key.keysym.sym == SDLK_ESCAPE) {
+                        cout << "Quitting" << endl;
+                        exit(0);
+                    };
                     map[e.key.keysym.sym] = action;
                     cout << keypress_to_name(action) << " is bound to " << SDL_GetKeyName(e.key.keysym.sym) << endl;
             }
@@ -39,7 +34,7 @@ bool handle_input(KeyMap &map) {
         switch (e.type) {
             case SDL_KEYDOWN:
                 break;
-            case SDL_KEYUP:    
+            case SDL_KEYUP:
                 if (e.key.keysym.sym == SDLK_ESCAPE) return false;
                 cout << "Pressed " << keypress_to_name(map[e.key.keysym.sym]) << endl;
 
@@ -51,7 +46,7 @@ bool handle_input(KeyMap &map) {
 const string keypress_to_name(Action a) {
     switch (a) {
         case MoveLeft:
-            return "MoveLeft";            
+            return "MoveLeft";
         case MoveRight:
             return "MoveRight";
         case Jump:
@@ -63,13 +58,10 @@ const string keypress_to_name(Action a) {
     }
 }
 
-void Input::poll_for_keys() {  
+void Input::poll_for_keys() {
     for (int keyInt = MoveLeft; keyInt != Attack + 1; keyInt++) {
         Action key = static_cast<Action>(keyInt);
         cout << "Polling for " << keypress_to_name(key) << endl;
-        if (!bind_key(key, mapRef)) {
-            cout << "Quitting" << endl;
-            goto quit;
-        }
+        bind_key(key);
     }
 }
