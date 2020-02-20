@@ -6,25 +6,28 @@ enum InputState {
     Rebinding
 };
 
-enum Action {
+enum UserAction {
     MoveLeft = 1,
     MoveRight,
     Jump,
     Attack
 };
 
-typedef std::map<SDL_Keycode, Action> KeyMap;
+typedef std::map<SDL_Keycode, UserAction> KeyMap;
 
-
-bool handle_input(KeyMap &map);
-const std::string keypress_to_name(Action a);
+const std::string keypress_to_name(UserAction a);
 
 class Input {
+    private:
+        bool rebind_finished = false;
+        UserAction rebind_action; // I guess this should be public?
     public:
-        InputState state;
+        void handle_input();
+        InputState state = Listening;
+        void set_action_to_rebind(UserAction action);
         KeyMap &map;
+        void input();
         Input(KeyMap &map);
         ~Input();
-        void bind_key(Action action);
-        void poll_for_keys();
+        void bind_key(SDL_Keycode key);
 };

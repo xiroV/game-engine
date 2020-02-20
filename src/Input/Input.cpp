@@ -10,40 +10,59 @@ Input::Input(KeyMap &map) : map{map} {}
 Input::~Input() {}
 
 
-void Input::bind_key(Action action) {
-    SDL_Event e;
-
-    while (true) {
-        while (SDL_PollEvent(&e)) {
-            switch (e.type) {
-                case SDL_KEYDOWN:
-                    if (e.key.keysym.sym == SDLK_ESCAPE) {
-                        cout << "Quitting" << endl;
-                        exit(0);
-                    };
-                    map[e.key.keysym.sym] = action;
-                    cout << keypress_to_name(action) << " is bound to " << SDL_GetKeyName(e.key.keysym.sym) << endl;
-            }
-        }
-    }
+void Input::bind_key(SDL_Keycode key) {
+    this->map[key] = this->rebind_action;
+    cout << "Rebound " << keypress_to_name(this->rebind_action) << endl;
 }
 
-bool handle_input(KeyMap &map) {
+/* Shouldn't be here. */
+void quit() {
+    cout << "Quitting" << endl;
+    exit(0);
+}
+
+void Input::set_action_to_rebind(UserAction action) {
+    cout << "We want to rebind " << keypress_to_name(action) << endl;
+    this->state = Rebinding;
+    this->rebind_finished = false;
+    this->rebind_action = action;
+}
+
+void Input::handle_input() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
-        switch (e.type) {
-            case SDL_KEYDOWN:
-                break;
-            case SDL_KEYUP:
-                if (e.key.keysym.sym == SDLK_ESCAPE) return false;
-                cout << "Pressed " << keypress_to_name(map[e.key.keysym.sym]) << endl;
 
+        if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) quit();
+
+        switch (this->state) {
+            case Listening:
+                switch (e.type) {
+                    case SDL_KEYDOWN:
+                        cout << "Pressed " << keypress_to_name(map[e.key.keysym.sym]) << endl;
+                        break;
+                    case SDL_KEYUP:
+                        break;
+                }
+                break;
+            case Rebinding:
+                
+                switch (e.type) {
+                    case SDL_KEYUP:
+                        this->state = Listening;
+                    case SDL_KEYDOWN:
+                        if (!this->rebind_finished) this->bind_key(e.key.keysym.sym);
+                        this->rebind_finished = true;
+                        break;
+                }
+                break;
+            default:
+                cout << "Unhandled case: " << this->state << endl;
+                break;
         }
     }
-    return true;
 }
 
-const string keypress_to_name(Action a) {
+const string keypress_to_name(UserAction a) {
     switch (a) {
         case MoveLeft:
             return "MoveLeft";
@@ -55,13 +74,5 @@ const string keypress_to_name(Action a) {
             return "Attack";
         default:
             return "Not mapped";
-    }
-}
-
-void Input::poll_for_keys() {
-    for (int keyInt = MoveLeft; keyInt != Attack + 1; keyInt++) {
-        Action key = static_cast<Action>(keyInt);
-        cout << "Polling for " << keypress_to_name(key) << endl;
-        bind_key(key);
     }
 }

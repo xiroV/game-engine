@@ -8,7 +8,7 @@
 
 class GameState {
 public:
-    GameState();
+    GameState(Input &input);
     ~GameState();
     Input &input;
     long delta = 0;

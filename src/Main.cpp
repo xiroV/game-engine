@@ -3,6 +3,7 @@
 #include <map>
 
 #include "Input/Input.hpp"
+#include "GameState.h"
 
 using namespace std;
 
@@ -22,10 +23,12 @@ int main() {
 
     cout << "Finished binding keys" << endl;
 
+    Input input(mapRef);
+    GameState game_state(input);
+    input.set_action_to_rebind(Jump);
+
     while (true) {
-        if (!handle_input(mapRef)) {
-            break;
-        }
+        game_state.input.handle_input();
     }
 
     SDL_DestroyWindow(window);
