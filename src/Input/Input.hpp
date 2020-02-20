@@ -22,6 +22,8 @@ class Input {
         bool rebind_finished = false;
         UserAction rebind_action; // I guess this should be public?
     public:
+        SDL_Point mouse_position {0,0};
+        SDL_Point mouse_delta {0,0};
         void handle_input();
         InputState state = Listening;
         void set_action_to_rebind(UserAction action);

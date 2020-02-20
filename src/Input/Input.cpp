@@ -5,7 +5,12 @@
 
 using namespace std;
 
-Input::Input(KeyMap &map) : map{map} {}
+Input::Input(KeyMap &map) : map{map} {
+    map[SDLK_LEFT] = MoveLeft;
+    map[SDLK_RIGHT] = MoveRight;
+    map[SDLK_SPACE] = Jump;
+    map[SDLK_LCTRL] = Attack;
+}
 
 Input::~Input() {}
 
@@ -30,7 +35,17 @@ void Input::set_action_to_rebind(UserAction action) {
 
 void Input::handle_input() {
     SDL_Event e;
+    int y = 0;
+    int x = 0;
     while (SDL_PollEvent(&e)) {
+
+        if (e.type == SDL_MOUSEMOTION) {
+            SDL_GetMouseState(&x, &y);
+            this->mouse_delta = {this->mouse_position.x - x, this->mouse_position.y - y};
+            this->mouse_position = {x,y};
+
+            // Maybe do acceleration?
+        }
 
         if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) quit();
 

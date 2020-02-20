@@ -29,9 +29,13 @@ int main() {
 
     while (true) {
         game_state.input.handle_input();
+
     }
 
     SDL_DestroyWindow(window);
     SDL_Quit();
     return 0;
+}
+
+void RenderText(KeyMap &map, SDL_Window *window, SDL_Renderer *r) {
 }
