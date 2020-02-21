@@ -41,7 +41,7 @@ void Input::handle_input() {
 
         if (e.type == SDL_MOUSEMOTION) {
             SDL_GetMouseState(&x, &y);
-            this->mouse_delta = {this->mouse_position.x - x, this->mouse_position.y - y};
+            this->mouse_delta = {x - this->mouse_position.x, y - this->mouse_position.y};
             this->mouse_position = {x,y};
 
             // Maybe do acceleration?
