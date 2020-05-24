@@ -10,6 +10,8 @@ struct TestState {
     bool jump_toggled;
 };
 
+void render_text_from_text(SDL_Renderer *renderer, TTF_Font *font, string text, SDL_Color color, SDL_Rect position);
+
 int input_test() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
@@ -24,9 +26,13 @@ int input_test() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
-    KeyMap map;
-    auto &mapRef = map;
-    Input input(mapRef);
+    KeyMap key_map;
+    auto &mapRef = key_map;
+    KeyPressMap keys_held_down;
+    auto held_down_ref = keys_held_down;
+    KeyPressMap keys_pressed_once;
+
+    Input input(mapRef, keys_held_down, keys_pressed_once);
     GameState game_state(input);
 
     string moveLeft = "";
@@ -48,7 +54,7 @@ int input_test() {
 
         string action_jump = "Jump";
         
-        render_text_from_text(renderer, font, "Jump toggled " + s.jump_toggled + end, { 255, 255, 255, SDL_ALPHA_OPAQUE }, { 5, 5 });
+        render_text_from_text(renderer, font, "Jump toggled " + to_string(s.jump_toggled) + "\n", { 255, 255, 255, SDL_ALPHA_OPAQUE }, { 5, 5, 200, 50 });
 
         SDL_RenderPresent(renderer);
         SDL_RenderClear(renderer);

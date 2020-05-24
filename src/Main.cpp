@@ -44,15 +44,18 @@ int main() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
-    KeyMap map;
-    auto &mapRef = map;
+    KeyMap key_map;
+    auto &mapRef = key_map;
+    KeyPressMap keys_held_down;
+    auto held_down_ref = keys_held_down;
+    KeyPressMap keys_pressed_once;
 
     const Uint8 *state = SDL_GetKeyboardState(NULL);
     printf("No more unused: %s\n", state);
 
     cout << "Finished binding keys" << endl;
 
-    Input input(mapRef);
+    Input input(mapRef, keys_held_down, keys_pressed_once);
     GameState game_state(input);
     input.set_action_to_rebind(Jump);
 

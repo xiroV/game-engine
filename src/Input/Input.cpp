@@ -6,26 +6,25 @@
 // This is bad, I guess?
 using namespace std;
 
-bool Input::is_down(Action a) {
+bool Input::is_down(UserAction a) {
     return this->keys_held_down[a];
 }
 
-bool Input::is_pressed(Action a) {
+bool Input::is_pressed(UserAction a) {
     return this->keys_pressed_once[a];
 }
 
-Input::Input(KeyMap &map) : map{map} {
-    map[SDLK_LEFT] = MoveLeft;
-    map[SDLK_RIGHT] = MoveRight;
-    map[SDLK_SPACE] = Jump;
-    map[SDLK_LCTRL] = Attack;
+Input::Input(KeyMap &key_map, KeyPressMap &keys_held_down, KeyPressMap &keys_pressed_once) : key_map{key_map}, keys_held_down{keys_held_down}, keys_pressed_once{keys_pressed_once} {
+    key_map[SDLK_LEFT] = MoveLeft;
+    key_map[SDLK_RIGHT] = MoveRight;
+    key_map[SDLK_SPACE] = Jump;
+    key_map[SDLK_LCTRL] = Attack;
 }
 
 Input::~Input() {}
 
-
 void Input::bind_key(SDL_Keycode key) {
-    this->map[key] = this->rebind_action;
+    this->key_map[key] = this->rebind_action;
     cout << "Rebound " << keypress_to_name(this->rebind_action) << endl;
 }
 
@@ -62,16 +61,16 @@ void Input::handle_input() {
             case Listening:
                 switch (e.type) {
                     case SDL_KEYDOWN:
-                        this->keys_held_down[map[e.key.keysym.sym]] = true;
-                        if (event.key.repeat == 0) {
-                            this->keys_pressed_once[map[e.key.keysym.sym]] = true;
+                        this->keys_held_down[key_map[e.key.keysym.sym]] = true;
+                        if (e.key.repeat == 0) {
+                            this->keys_pressed_once[key_map[e.key.keysym.sym]] = true;
                         } else {
-                            this->keys_pressed_once[map[e.key.keysym.sym]] = false;
+                            this->keys_pressed_once[key_map[e.key.keysym.sym]] = false;
                         }
-                        cout << "Pressed " << keypress_to_name(map[e.key.keysym.sym]) << endl;
+                        cout << "Pressed " << keypress_to_name(key_map[e.key.keysym.sym]) << endl;
                         break;
                     case SDL_KEYUP:
-                        this->keys_held_down[map[e.key.keysym.sym]] = true;
+                        this->keys_held_down[key_map[e.key.keysym.sym]] = true;
                         break;
                 }
                 break;

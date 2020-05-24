@@ -28,12 +28,12 @@ class Input {
         void handle_input();
         InputState state = Listening;
         void set_action_to_rebind(UserAction action);
-        KeyMap &map;
+        KeyMap &key_map;
         KeyPressMap &keys_held_down;
         KeyPressMap &keys_pressed_once;
-        bool is_down(Action action);
-        bool is_pressed(Action action);
-        Input(KeyMap &map);
+        bool is_down(UserAction action);
+        bool is_pressed(UserAction action);
+        Input(KeyMap &key_map, KeyPressMap &keys_held_down, KeyPressMap &keys_pressed_once);
         ~Input();
         void bind_key(SDL_Keycode key);
 };
