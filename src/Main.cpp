@@ -34,7 +34,7 @@ int main(int argc, char const *argv[]) {
 
 int main() {
     if (TTF_Init() < 0) {
-        // Handle Failure
+        std::cout << "Failed to initialize TTF" << std::endl;
     }   
     
     SDL_Init(SDL_INIT_VIDEO);

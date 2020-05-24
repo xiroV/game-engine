@@ -6,9 +6,14 @@
 
 using namespace std;
 
+struct TestState {
+    bool jump_toggled;
+};
+
 int input_test() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
+    TestState s;
     auto *font = TTF_OpenFont("/assets/Font/PressStart2P.ttf", 32);
     if (font == NULL) {
         cout << "Failed to load font" << endl;
@@ -31,6 +36,10 @@ int input_test() {
 
     while (true) {
         game_state.input.handle_input();
+                
+        if (game_state.input.is_pressed(Jump)) {
+            s.jump_toggled = !s.jump_toggled;
+        }
 
         auto mouseCoordinates = game_state.input.mouse_position;
         // For each action, show bound key;
@@ -39,10 +48,7 @@ int input_test() {
 
         string action_jump = "Jump";
         
-        
-        
-
-        render_text_from_text(renderer, font, "");
+        render_text_from_text(renderer, font, "Jump toggled " + s.jump_toggled + end, { 255, 255, 255, SDL_ALPHA_OPAQUE }, { 5, 5 });
 
         SDL_RenderPresent(renderer);
         SDL_RenderClear(renderer);
@@ -55,8 +61,8 @@ int input_test() {
     return 0;
 }
 
-void render_text_from_text(SDL_Renderer *renderer, TTF_Font *font, string text, SDL_Color c, SDL_Rect position) {
-    SDL_Surface *textSurface = TTF_RenderText_Solid(font, "Color", SDL_Color({255, 255, 255, SDL_ALPHA_OPAQUE}));
+void render_text_from_text(SDL_Renderer *renderer, TTF_Font *font, string text, SDL_Color color, SDL_Rect position) {
+    SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, textSurface);
     free(textSurface);
     SDL_RenderCopy(renderer, texture, NULL, &position);

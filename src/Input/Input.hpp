@@ -14,6 +14,7 @@ enum UserAction {
 };
 
 typedef std::map<SDL_Keycode, UserAction> KeyMap;
+typedef std::map<UserAction, bool> KeyPressMap;
 
 const std::string keypress_to_name(UserAction a);
 
@@ -28,7 +29,10 @@ class Input {
         InputState state = Listening;
         void set_action_to_rebind(UserAction action);
         KeyMap &map;
-        void input();
+        KeyPressMap &keys_held_down;
+        KeyPressMap &keys_pressed_once;
+        bool is_down(Action action);
+        bool is_pressed(Action action);
         Input(KeyMap &map);
         ~Input();
         void bind_key(SDL_Keycode key);

@@ -3,7 +3,16 @@
 #include <map>
 #include "Input.hpp"
 
+// This is bad, I guess?
 using namespace std;
+
+bool Input::is_down(Action a) {
+    return this->keys_held_down[a];
+}
+
+bool Input::is_pressed(Action a) {
+    return this->keys_pressed_once[a];
+}
 
 Input::Input(KeyMap &map) : map{map} {
     map[SDLK_LEFT] = MoveLeft;
@@ -53,14 +62,20 @@ void Input::handle_input() {
             case Listening:
                 switch (e.type) {
                     case SDL_KEYDOWN:
+                        this->keys_held_down[map[e.key.keysym.sym]] = true;
+                        if (event.key.repeat == 0) {
+                            this->keys_pressed_once[map[e.key.keysym.sym]] = true;
+                        } else {
+                            this->keys_pressed_once[map[e.key.keysym.sym]] = false;
+                        }
                         cout << "Pressed " << keypress_to_name(map[e.key.keysym.sym]) << endl;
                         break;
                     case SDL_KEYUP:
+                        this->keys_held_down[map[e.key.keysym.sym]] = true;
                         break;
                 }
                 break;
             case Rebinding:
-                
                 switch (e.type) {
                     case SDL_KEYUP:
                         this->state = Listening;
