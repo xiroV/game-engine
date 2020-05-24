@@ -25,7 +25,7 @@ Input::~Input() {}
 
 void Input::bind_key(SDL_Keycode key) {
     this->key_map[key] = this->rebind_action;
-    cout << "Rebound " << keypress_to_name(this->rebind_action) << endl;
+    cout << "Rebound " << useraction_to_name(this->rebind_action) << endl;
 }
 
 /* Shouldn't be here. */
@@ -35,7 +35,7 @@ void quit() {
 }
 
 void Input::set_action_to_rebind(UserAction action) {
-    cout << "We want to rebind " << keypress_to_name(action) << endl;
+    cout << "We want to rebind " << useraction_to_name(action) << endl;
     this->state = Rebinding;
     this->rebind_finished = false;
     this->rebind_action = action;
@@ -51,7 +51,7 @@ void Input::handle_input() {
     int x = 0;
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_MOUSEMOTION) {
-            SDL_GetMouseState(&x, &y);
+            const auto mouse_state = SDL_GetMouseState(&x, &y);
             this->mouse_delta = {x - this->mouse_position.x, y - this->mouse_position.y};
             this->mouse_position = {x,y};
             // Maybe do acceleration?
@@ -59,20 +59,19 @@ void Input::handle_input() {
 
         if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) quit();
 
-
         switch (this->state) {
             case Listening:
-                switch (e.type) {
+                switch (e.type) {                    
                     case SDL_KEYDOWN: {
                         SDL_Keycode key = e.key.keysym.sym;
                         this->keys_pressed_once[key_map[key]] = true;
                         this->keys_held_down[key_map[key]] = true;
-                        cout << "Pressed " << keypress_to_name(key_map[key]) << endl;
+                        cout << "Pressed " << useraction_to_name(key_map[key]) << endl;
                         break;
                     }
                     case SDL_KEYUP: {
                         SDL_Keycode key = e.key.keysym.sym;
-                        this->keys_held_down[key_map[key]] = true;
+                        this->keys_held_down[key_map[key]] = false;
                         break;
                     }
                 }
@@ -94,7 +93,7 @@ void Input::handle_input() {
     }
 }
 
-const string keypress_to_name(UserAction a) {
+const string useraction_to_name(UserAction a) {
     switch (a) {
         case MoveLeft:
             return "MoveLeft";

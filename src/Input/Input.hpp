@@ -16,7 +16,7 @@ enum UserAction {
 typedef std::map<SDL_Keycode, UserAction> KeyMap;
 typedef std::map<UserAction, bool> KeyPressMap;
 
-const std::string keypress_to_name(UserAction a);
+const std::string useraction_to_name(UserAction a);
 
 class Input {
     private:
