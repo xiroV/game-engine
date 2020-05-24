@@ -9,29 +9,30 @@
 
 using namespace std;
 
+#if WITH_TESTS
+
 int main(int argc, char const *argv[]) {
-    #if WITH_TESTS
+    bool any_test = false;
     if (argc > 1) {
-        cout << "Size" << endl;
-        bool any_test = false;
         // Skip run command
 
         for (int i = 1; i < argc; i++) {
-            cout << i << endl;
             if (string("input-test").compare(argv[i]) == 0) {
                 input_test();
                 any_test = true;
             }
         }
-
-        if (!any_test) {
-            cout << "No test was run" << endl;
-        }
-        exit(0);
     }
 
-    #else
+    if (!any_test) {
+        cout << "No test was run" << endl;
+    }
+    return 0;
+}
 
+#else 
+
+int main() {
     if (TTF_Init() < 0) {
         // Handle Failure
     }   
@@ -64,5 +65,5 @@ int main(int argc, char const *argv[]) {
     SDL_Quit();
 
     return 0;
-    #endif
 }
+#endif
