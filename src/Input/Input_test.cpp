@@ -4,21 +4,23 @@
 #include "Input.hpp"
 #include "../GameState.h"
 
-using namespace std;
-
 struct TestState {
-    bool jump_toggled;
+    bool jump_toggled = false;
+    bool left_toggled = false;
+    bool right_toggled = false;
+    bool attack_toggled = false;
 };
 
-void render_text_from_text(SDL_Renderer *renderer, TTF_Font *font, string text, SDL_Color color, SDL_Rect position);
+std::string boolean_to_string(bool value);
+void render_text(SDL_Renderer *renderer, TTF_Font *font, std::string text, SDL_Color color, int font_size, int x, int y);
 
 int input_test() {
     SDL_Init(SDL_INIT_VIDEO);
     TTF_Init();
-    TestState s;
+    TestState test_state;
     auto *font = TTF_OpenFont("/assets/Font/PressStart2P.ttf", 32);
     if (font == NULL) {
-        cout << "Failed to load font" << endl;
+        std::cout << "Failed to load font" << std::endl;
     }
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -35,26 +37,33 @@ int input_test() {
     Input input(mapRef, keys_held_down, keys_pressed_once);
     GameState game_state(input);
 
-    string moveLeft = "";
-    string moveRight = "";
-    string jump = "";
-    string attack = "";
-
     while (true) {
         game_state.input.handle_input();
                 
-        if (game_state.input.is_pressed(Jump)) {
-            s.jump_toggled = !s.jump_toggled;
+        if (game_state.input.is_pressed_once(Jump)) {
+            test_state.jump_toggled = !test_state.jump_toggled;
+        }
+
+        if (game_state.input.is_pressed_once(Attack)) {
+            test_state.attack_toggled = !test_state.attack_toggled;
+        }
+
+        if (game_state.input.is_pressed_once(MoveLeft)) {
+            test_state.left_toggled = !test_state.left_toggled;
+        }
+
+        if (game_state.input.is_pressed_once(MoveRight)) {
+            test_state.right_toggled = !test_state.right_toggled;
         }
 
         auto mouseCoordinates = game_state.input.mouse_position;
         // For each action, show bound key;
         // On click, set rebind for a key.
+        render_text(renderer, font, std::string("Jump toggled ") + boolean_to_string(test_state.jump_toggled), { 255, 255, 255, SDL_ALPHA_OPAQUE }, 25, 5, 5);
+        render_text(renderer, font, std::string("Attack toggled ") + boolean_to_string(test_state.attack_toggled), { 255, 255, 255, SDL_ALPHA_OPAQUE }, 25, 5, 30);
+        render_text(renderer, font, std::string("Left toggled ") + boolean_to_string(test_state.left_toggled), { 255, 255, 255, SDL_ALPHA_OPAQUE }, 25, 5, 55);
+        render_text(renderer, font, std::string("Right toggled ") + boolean_to_string(test_state.right_toggled), { 255, 255, 255, SDL_ALPHA_OPAQUE }, 25, 5, 80);
 
-
-        string action_jump = "Jump";
-        
-        render_text_from_text(renderer, font, "Jump toggled " + to_string(s.jump_toggled) + "\n", { 255, 255, 255, SDL_ALPHA_OPAQUE }, { 5, 5, 200, 50 });
 
         SDL_RenderPresent(renderer);
         SDL_RenderClear(renderer);
@@ -67,9 +76,14 @@ int input_test() {
     return 0;
 }
 
-void render_text_from_text(SDL_Renderer *renderer, TTF_Font *font, string text, SDL_Color color, SDL_Rect position) {
+void render_text(SDL_Renderer *renderer, TTF_Font *font, std::string text, SDL_Color color, int font_size, int x, int y) {
     SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
     SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, textSurface);
     free(textSurface);
+    SDL_Rect position = { x, y, (int) (font_size * text.length()), font_size };
     SDL_RenderCopy(renderer, texture, NULL, &position);
+}
+
+std::string boolean_to_string(bool value) {
+    return value ? "true" : "false";
 }

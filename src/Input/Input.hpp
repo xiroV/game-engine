@@ -32,7 +32,7 @@ class Input {
         KeyPressMap &keys_held_down;
         KeyPressMap &keys_pressed_once;
         bool is_down(UserAction action);
-        bool is_pressed(UserAction action);
+        bool is_pressed_once(UserAction action);
         Input(KeyMap &key_map, KeyPressMap &keys_held_down, KeyPressMap &keys_pressed_once);
         ~Input();
         void bind_key(SDL_Keycode key);

@@ -10,7 +10,7 @@ bool Input::is_down(UserAction a) {
     return this->keys_held_down[a];
 }
 
-bool Input::is_pressed(UserAction a) {
+bool Input::is_pressed_once(UserAction a) {
     return this->keys_pressed_once[a];
 }
 
@@ -42,36 +42,39 @@ void Input::set_action_to_rebind(UserAction action) {
 }
 
 void Input::handle_input() {
+    this->keys_pressed_once[MoveLeft] = false;
+    this->keys_pressed_once[MoveRight] = false;
+    this->keys_pressed_once[Jump] = false;
+    this->keys_pressed_once[Attack] = false;
     SDL_Event e;
     int y = 0;
     int x = 0;
     while (SDL_PollEvent(&e)) {
-
         if (e.type == SDL_MOUSEMOTION) {
             SDL_GetMouseState(&x, &y);
             this->mouse_delta = {x - this->mouse_position.x, y - this->mouse_position.y};
             this->mouse_position = {x,y};
-
             // Maybe do acceleration?
         }
 
         if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) quit();
 
+
         switch (this->state) {
             case Listening:
                 switch (e.type) {
-                    case SDL_KEYDOWN:
-                        this->keys_held_down[key_map[e.key.keysym.sym]] = true;
-                        if (e.key.repeat == 0) {
-                            this->keys_pressed_once[key_map[e.key.keysym.sym]] = true;
-                        } else {
-                            this->keys_pressed_once[key_map[e.key.keysym.sym]] = false;
-                        }
-                        cout << "Pressed " << keypress_to_name(key_map[e.key.keysym.sym]) << endl;
+                    case SDL_KEYDOWN: {
+                        SDL_Keycode key = e.key.keysym.sym;
+                        this->keys_pressed_once[key_map[key]] = true;
+                        this->keys_held_down[key_map[key]] = true;
+                        cout << "Pressed " << keypress_to_name(key_map[key]) << endl;
                         break;
-                    case SDL_KEYUP:
-                        this->keys_held_down[key_map[e.key.keysym.sym]] = true;
+                    }
+                    case SDL_KEYUP: {
+                        SDL_Keycode key = e.key.keysym.sym;
+                        this->keys_held_down[key_map[key]] = true;
                         break;
+                    }
                 }
                 break;
             case Rebinding:
