@@ -63,6 +63,7 @@ int input_test() {
         }
 
         auto mouseCoordinates = game_state.input.mouse_position;
+        auto mouseDelta = game_state.input.mouse_delta;
         // For each action, show bound key;
         // On click, set rebind for a key.
         render_text(renderer, font, std::string("Jump toggled ") + bool_string(test_state.jump_toggled), WHITE, 25, 10, 5);
@@ -74,16 +75,22 @@ int input_test() {
         render_text(renderer, font, std::string("Attack ") + up_or_down(game_state.input.is_down(Attack)), WHITE, 25, 10, 180);
         render_text(renderer, font, std::string("Left ") + up_or_down(game_state.input.is_down(MoveLeft)), WHITE, 25, 10, 215);
         render_text(renderer, font, std::string("Right ") + up_or_down(game_state.input.is_down(MoveRight)), WHITE, 25, 10, 250);
+        render_text(renderer, font, std::string("Mouse pos x: ") + std::to_string(mouseCoordinates.x), WHITE, 25, 10, 285);
+        render_text(renderer, font, std::string("Mouse pos y: ") + std::to_string(mouseCoordinates.y), WHITE, 25, 10, 320);
+        render_text(renderer, font, std::string("Mouse delta x: ") + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
+        render_text(renderer, font, std::string("Mouse delta y: ") + std::to_string(mouseDelta.y), WHITE, 25, 10, 390);
+
+        
 
          // game_state.input.key_map.
         int i = 0;
         for (auto key_action_pair : game_state.input.key_map) {
             auto action_name = useraction_to_name(key_action_pair.second);
             if (action_name != "Not mapped") {
-                render_text(renderer, font, action_name + " " + SDL_GetKeyName(key_action_pair.first), WHITE, 25, 10, (285 + 35 * i)); 
+                render_text(renderer, font, action_name + " " + SDL_GetKeyName(key_action_pair.first), WHITE, 25, 10, (425 + 35 * i)); 
                 
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                SDL_Rect rect { 600, (285 + 35 * i++), 200, 25 };
+                SDL_Rect rect { 600, (425 + 35 * i++), 200, 25 };
                 SDL_RenderFillRect(renderer, &rect);
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
                 if (is_colliding(mouseCoordinates, rect)) {

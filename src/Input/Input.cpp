@@ -64,7 +64,7 @@ void Input::handle_input() {
                 switch (e.type) {                    
                     case SDL_KEYDOWN: {
                         SDL_Keycode key = e.key.keysym.sym;
-                        this->keys_pressed_once[key_map[key]] = true;
+                        if (e.key.repeat == 0) this->keys_pressed_once[key_map[key]] = true;
                         this->keys_held_down[key_map[key]] = true;
                         cout << "Pressed " << useraction_to_name(key_map[key]) << endl;
                         break;
