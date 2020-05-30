@@ -2,7 +2,7 @@
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
 #include "Input.hpp"
-#include "../GameState.h"
+#include "../Engine.h"
 
 struct TestState {
     bool jump_toggled = false;
