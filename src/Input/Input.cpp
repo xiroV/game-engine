@@ -3,49 +3,55 @@
 #include <map>
 #include "Input.hpp"
 
-// This is bad, I guess?
-using namespace std;
-
 bool Input::is_down(UserAction a) {
-    return this->keys_held_down[a];
+    return this->controller_held_down[a] || this->mouse_button_held[a] || this->keys_held_down[a];
 }
 
 bool Input::is_pressed_once(UserAction a) {
-    return this->keys_pressed_once[a];
+    return this->controller_pressed_once[a] || this->mouse_clicked_once[a] || this->keys_pressed_once[a];
 }
 
-Input::Input(KeyMap &key_map, KeyPressMap &keys_held_down, KeyPressMap &keys_pressed_once) : key_map{key_map}, keys_held_down{keys_held_down}, keys_pressed_once{keys_pressed_once} {
-    key_map[SDLK_LEFT] = MoveLeft;
-    key_map[SDLK_RIGHT] = MoveRight;
-    key_map[SDLK_SPACE] = Jump;
-    key_map[SDLK_LCTRL] = Attack;
+Input::Input(
+    KeyMap &key_map,
+    MouseMap &mouse_map,
+    ControllerMap &controller_map
+): key_map{key_map}, mouse_map{mouse_map}, controller_map{controller_map} {
 }
 
 Input::~Input() {}
 
 void Input::bind_key(SDL_Keycode key) {
     this->key_map[key] = this->rebind_action;
-    cout << "Rebound " << useraction_to_name(this->rebind_action) << endl;
+    std::cout << "Rebound " << useraction_to_name(this->rebind_action) << std::endl;
 }
 
 /* Shouldn't be here. */
 void quit() {
-    cout << "Quitting" << endl;
+    std::cout << "Quitting" << std::endl;
     exit(0);
 }
 
 void Input::set_action_to_rebind(UserAction action) {
-    cout << "We want to rebind " << useraction_to_name(action) << endl;
+    std::cout << "We want to rebind " << useraction_to_name(action) << std::endl;
     this->state = Rebinding;
     this->rebind_finished = false;
     this->rebind_action = action;
 }
 
 void Input::handle_input() {
-    this->keys_pressed_once[MoveLeft] = false;
-    this->keys_pressed_once[MoveRight] = false;
-    this->keys_pressed_once[Jump] = false;
-    this->keys_pressed_once[Attack] = false;
+
+    for (auto p : this->keys_pressed_once) {
+        this->keys_pressed_once[p.first] = false;
+    }
+
+    for (auto p : this->controller_pressed_once) {
+        this->controller_pressed_once[p.first] = false;
+    }
+
+    for (auto p : this->mouse_clicked_once) {
+        this->mouse_clicked_once[p.first] = false;
+    }
+
     SDL_Event e;
     int y = 0;
     int x = 0;
@@ -54,7 +60,24 @@ void Input::handle_input() {
             const auto mouse_state = SDL_GetMouseState(&x, &y);
             this->mouse_delta = {x - this->mouse_position.x, y - this->mouse_position.y};
             this->mouse_position = {x,y};
-            // Maybe do acceleration?
+            // TODO Maybe do acceleration?
+        }
+
+        if (e.type == SDL_MOUSEWHEEL) {
+            // TODO: Handle   
+        }
+
+
+        switch (e.type) {
+            case SDL_MOUSEBUTTONDOWN: {
+                printf("%i", e.button.button);
+                this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
+                this->mouse_button_held[this->mouse_map[e.button.button]] = true;
+                break;
+            }
+            case SDL_MOUSEBUTTONUP:
+                this->mouse_button_held[this->mouse_map[e.button.button]] = false;
+                break;
         }
 
         if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) quit();
@@ -66,7 +89,6 @@ void Input::handle_input() {
                         SDL_Keycode key = e.key.keysym.sym;
                         if (e.key.repeat == 0) this->keys_pressed_once[key_map[key]] = true;
                         this->keys_held_down[key_map[key]] = true;
-                        cout << "Pressed " << useraction_to_name(key_map[key]) << endl;
                         break;
                     }
                     case SDL_KEYUP: {
@@ -87,13 +109,13 @@ void Input::handle_input() {
                 }
                 break;
             default:
-                cout << "Unhandled case: " << this->state << endl;
+                std::cout << "Unhandled case: " << this->state << std::endl;
                 break;
         }
     }
 }
 
-const string useraction_to_name(UserAction a) {
+const std::string useraction_to_name(UserAction a) {
     switch (a) {
         case MoveLeft:
             return "MoveLeft";

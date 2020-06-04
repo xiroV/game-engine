@@ -35,35 +35,41 @@ int input_test() {
     SDL_RenderClear(renderer);
 
     KeyMap key_map;
-    auto &mapRef = key_map;
-    KeyPressMap keys_held_down;
-    auto held_down_ref = keys_held_down;
-    KeyPressMap keys_pressed_once;
+    key_map[SDLK_LEFT] = MoveLeft;
+    key_map[SDLK_RIGHT] = MoveRight;
+    key_map[SDLK_SPACE] = Jump;
+    key_map[SDLK_LCTRL] = Attack;
+    MouseMap mouse_map;
+    // 1 is left, 3 is right. Needs to be better expressed.
+    mouse_map[1] = Jump;
+    mouse_map[3] = Attack;
+    ControllerMap controller_map;
+    controller_map[SDL_CONTROLLER_BUTTON_B] = Attack;
+    controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
 
-    Input input(mapRef, keys_held_down, keys_pressed_once);
-    GameState game_state(input);
+    Input input(key_map, mouse_map, controller_map);
+    Engine engine(input);
 
     while (true) {
-        game_state.input.handle_input();
-                
-        if (game_state.input.is_pressed_once(Jump)) {
+        engine.input.handle_input();
+        if (engine.input.is_pressed_once(Jump)) {
             test_state.jump_toggled = !test_state.jump_toggled;
         }
 
-        if (game_state.input.is_pressed_once(Attack)) {
+        if (engine.input.is_pressed_once(Attack)) {
             test_state.attack_toggled = !test_state.attack_toggled;
         }
 
-        if (game_state.input.is_pressed_once(MoveLeft)) {
+        if (engine.input.is_pressed_once(MoveLeft)) {
             test_state.left_toggled = !test_state.left_toggled;
         }
 
-        if (game_state.input.is_pressed_once(MoveRight)) {
+        if (engine.input.is_pressed_once(MoveRight)) {
             test_state.right_toggled = !test_state.right_toggled;
         }
 
-        auto mouseCoordinates = game_state.input.mouse_position;
-        auto mouseDelta = game_state.input.mouse_delta;
+        auto mouseCoordinates = engine.input.mouse_position;
+        auto mouseDelta = engine.input.mouse_delta;
         // For each action, show bound key;
         // On click, set rebind for a key.
         render_text(renderer, font, std::string("Jump toggled ") + bool_string(test_state.jump_toggled), WHITE, 25, 10, 5);
@@ -71,10 +77,10 @@ int input_test() {
         render_text(renderer, font, std::string("Left toggled ") + bool_string(test_state.left_toggled), WHITE, 25, 10, 75);
         render_text(renderer, font, std::string("Right toggled ") + bool_string(test_state.right_toggled), WHITE, 25, 10, 110);
 
-        render_text(renderer, font, std::string("Jump ") + up_or_down(game_state.input.is_down(Jump)), WHITE, 25, 10, 145);
-        render_text(renderer, font, std::string("Attack ") + up_or_down(game_state.input.is_down(Attack)), WHITE, 25, 10, 180);
-        render_text(renderer, font, std::string("Left ") + up_or_down(game_state.input.is_down(MoveLeft)), WHITE, 25, 10, 215);
-        render_text(renderer, font, std::string("Right ") + up_or_down(game_state.input.is_down(MoveRight)), WHITE, 25, 10, 250);
+        render_text(renderer, font, std::string("Jump ") + up_or_down(engine.input.is_down(Jump)), WHITE, 25, 10, 145);
+        render_text(renderer, font, std::string("Attack ") + up_or_down(engine.input.is_down(Attack)), WHITE, 25, 10, 180);
+        render_text(renderer, font, std::string("Left ") + up_or_down(engine.input.is_down(MoveLeft)), WHITE, 25, 10, 215);
+        render_text(renderer, font, std::string("Right ") + up_or_down(engine.input.is_down(MoveRight)), WHITE, 25, 10, 250);
         render_text(renderer, font, std::string("Mouse pos x: ") + std::to_string(mouseCoordinates.x), WHITE, 25, 10, 285);
         render_text(renderer, font, std::string("Mouse pos y: ") + std::to_string(mouseCoordinates.y), WHITE, 25, 10, 320);
         render_text(renderer, font, std::string("Mouse delta x: ") + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
@@ -84,7 +90,7 @@ int input_test() {
 
          // game_state.input.key_map.
         int i = 0;
-        for (auto key_action_pair : game_state.input.key_map) {
+        for (auto key_action_pair : engine.input.key_map) {
             auto action_name = useraction_to_name(key_action_pair.second);
             if (action_name != "Not mapped") {
                 render_text(renderer, font, action_name + " " + SDL_GetKeyName(key_action_pair.first), WHITE, 25, 10, (425 + 35 * i)); 

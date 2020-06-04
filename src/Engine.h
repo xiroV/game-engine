@@ -5,7 +5,7 @@
 #ifndef GAME_ENGINE_ENGINE_H
 #define GAME_ENGINE_ENGINE_H
 
-#include "Input.hpp"
+#include "Input/Input.hpp"
 
 class Engine {
     public:
