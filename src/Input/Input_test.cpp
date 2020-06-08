@@ -21,7 +21,7 @@ bool is_colliding(SDL_Point&, SDL_Rect&);
 void render_text(SDL_Renderer*, TTF_Font *, std::string, SDL_Color, int, int, int);
 
 int input_test() {
-    SDL_Init(SDL_INIT_VIDEO);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
     TTF_Init();
     TestState test_state;
     auto *font = TTF_OpenFont("/assets/Font/PressStart2P.ttf", 32);
@@ -40,9 +40,9 @@ int input_test() {
     key_map[SDLK_SPACE] = Jump;
     key_map[SDLK_LCTRL] = Attack;
     MouseMap mouse_map;
-    // 1 is left, 3 is right. Needs to be better expressed.
-    mouse_map[1] = Jump;
-    mouse_map[3] = Attack;
+
+    mouse_map[SDL_BUTTON_LEFT] = Jump;
+    mouse_map[SDL_BUTTON_RIGHT] = Attack;
     ControllerMap controller_map;
     controller_map[SDL_CONTROLLER_BUTTON_B] = Attack;
     controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
