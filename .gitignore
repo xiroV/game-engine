@@ -3,3 +3,17 @@
 .vscode/settings.json
 engine
 engine-test
+.vs/**
+Debug/**
+Release/**
+x64/**
+*.sln
+*.aps
+*.rc
+*.vcxproj
+*.filters
+*.user
+*.dll
+RCa14488
+RCb14488
+resource.h

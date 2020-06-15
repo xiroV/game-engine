@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include <iostream>
+#include <string>
 #include "Input.hpp"
 #include "../Engine.h"
 
@@ -22,11 +23,21 @@ void render_text(SDL_Renderer*, TTF_Font *, std::string, SDL_Color, int, int, in
 
 int input_test() {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
-    TTF_Init();
     TestState test_state;
-    auto *font = TTF_OpenFont("/assets/Font/PressStart2P.ttf", 32);
+    std::cout << SDL_GetBasePath() << std::endl;
+    TTF_Init();
+
+    #ifdef __WIN32__
+        auto *font = TTF_OpenFont(".\\assets\\Font\\PressStart2P.ttf", 32);
+    #else
+        auto* font = TTF_OpenFont("./assets/Font/PressStart2P.ttf", 32);
+    #endif // __WIN32__
+
+
     if (font == NULL) {
         std::cout << "Failed to load font" << std::endl;
+        std::cout << TTF_GetError() << std::endl;
+        return 1;
     }
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -77,14 +88,14 @@ int input_test() {
         render_text(renderer, font, std::string("Left toggled ") + bool_string(test_state.left_toggled), WHITE, 25, 10, 75);
         render_text(renderer, font, std::string("Right toggled ") + bool_string(test_state.right_toggled), WHITE, 25, 10, 110);
 
-        render_text(renderer, font, std::string("Jump ") + up_or_down(engine.input.is_down(Jump)), WHITE, 25, 10, 145);
-        render_text(renderer, font, std::string("Attack ") + up_or_down(engine.input.is_down(Attack)), WHITE, 25, 10, 180);
-        render_text(renderer, font, std::string("Left ") + up_or_down(engine.input.is_down(MoveLeft)), WHITE, 25, 10, 215);
-        render_text(renderer, font, std::string("Right ") + up_or_down(engine.input.is_down(MoveRight)), WHITE, 25, 10, 250);
-        render_text(renderer, font, std::string("Mouse pos x: ") + std::to_string(mouseCoordinates.x), WHITE, 25, 10, 285);
-        render_text(renderer, font, std::string("Mouse pos y: ") + std::to_string(mouseCoordinates.y), WHITE, 25, 10, 320);
-        render_text(renderer, font, std::string("Mouse delta x: ") + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
-        render_text(renderer, font, std::string("Mouse delta y: ") + std::to_string(mouseDelta.y), WHITE, 25, 10, 390);
+        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_down(Jump)), WHITE, 25, 10, 145);
+        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_down(Attack)), WHITE, 25, 10, 180);
+        render_text(renderer, font, "Left " + up_or_down(engine.input.is_down(MoveLeft)), WHITE, 25, 10, 215);
+        render_text(renderer, font, "Right " + up_or_down(engine.input.is_down(MoveRight)), WHITE, 25, 10, 250);
+        render_text(renderer, font, "Mouse pos x: " + std::to_string(mouseCoordinates.x), WHITE, 25, 10, 285);
+        render_text(renderer, font, "Mouse pos y: " + std::to_string(mouseCoordinates.y), WHITE, 25, 10, 320);
+        render_text(renderer, font, "Mouse delta x: " + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
+        render_text(renderer, font, "Mouse delta y: " + std::to_string(mouseDelta.y), WHITE, 25, 10, 390);
 
         
 
@@ -117,11 +128,12 @@ int input_test() {
 }
 
 void render_text(SDL_Renderer *renderer, TTF_Font *font, std::string text, SDL_Color color, int font_size, int x, int y) {
-    SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
-    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, textSurface);
-    free(textSurface);
-    SDL_Rect position = { x, y, (int) (font_size * text.length()), font_size };
-    SDL_RenderCopy(renderer, texture, NULL, &position);
+   SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
+   SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, textSurface);
+   SDL_Rect position = { x, y, (int) (font_size * text.length()), font_size };
+   SDL_RenderCopy(renderer, texture, NULL, &position);
+   SDL_DestroyTexture(texture);
+   SDL_FreeSurface(textSurface);
 }
 
 bool is_colliding(SDL_Point &point, SDL_Rect &rect) {

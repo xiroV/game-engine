@@ -1,5 +1,6 @@
 #pragma once
 #include <map>
+#include <iostream>
 #include <SDL2/SDL.h>
 
 enum InputState {
