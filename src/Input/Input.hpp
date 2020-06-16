@@ -12,7 +12,8 @@ enum UserAction {
     MoveLeft = 1,
     MoveRight,
     Jump,
-    Attack
+    Attack,
+    Select
 };
 
 typedef std::map<SDL_Keycode, UserAction> KeyMap;
@@ -21,7 +22,7 @@ typedef std::map<UserAction, bool> KeyPresses;
 typedef std::map<Uint8, UserAction> MouseMap;
 typedef std::map<UserAction, bool> MousePresses;
 
-typedef std::map<SDL_GameControllerButton, UserAction> ControllerMap;
+typedef std::map<Uint8, UserAction> ControllerMap;
 typedef std::map<UserAction, bool> ControllerPresses;
 
 const std::string useraction_to_name(UserAction a);
@@ -33,7 +34,7 @@ class Input {
     public:
         SDL_Point mouse_position{0, 0};
         SDL_Point mouse_delta{0, 0};
-        void handle_input();
+        bool handle_input();
         InputState state = Listening;
         void set_action_to_rebind(UserAction action);
         KeyMap &key_map;

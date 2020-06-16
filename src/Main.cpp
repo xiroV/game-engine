@@ -11,14 +11,15 @@ using namespace std;
 
 #if WITH_TESTS
 
-int main(int argc, char const *argv[]) {
+int main(int argc, char* argv[]) {
     bool any_test = false;
+    input_test();
     if (argc > 1) {
         // Skip run command
 
         for (int i = 1; i < argc; i++) {
             if (string("input-test").compare(argv[i]) == 0) {
-                input_test();
+                
                 any_test = true;
             }
         }
@@ -32,7 +33,7 @@ int main(int argc, char const *argv[]) {
 
 #else 
 
-int main() {
+int main(int argc, char* argv[]) {
     if (TTF_Init() < 0) {
         std::cout << "Failed to initialize TTF" << std::endl;
     }   

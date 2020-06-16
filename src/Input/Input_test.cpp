@@ -10,6 +10,7 @@ struct TestState {
     bool left_toggled = false;
     bool right_toggled = false;
     bool attack_toggled = false;
+    bool select = false;
 };
 
 #define WHITE SDL_Color{255, 255, 255, SDL_ALPHA_OPAQUE}
@@ -22,10 +23,22 @@ bool is_colliding(SDL_Point&, SDL_Rect&);
 void render_text(SDL_Renderer*, TTF_Font *, std::string, SDL_Color, int, int, int);
 
 int input_test() {
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
     TestState test_state;
     std::cout << SDL_GetBasePath() << std::endl;
     TTF_Init();
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            char* mapping;
+            SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", i, SDL_GameControllerNameForIndex(i));
+            auto ctrl = SDL_GameControllerOpen(i);
+            mapping = SDL_GameControllerMapping(ctrl);
+            SDL_Log("Controller %i is mapped as \"%s\".", i, mapping);
+            SDL_free(mapping);
+        } else {
+            SDL_Log("Index \'%i\' is not a compatible controller.", i);
+        }
+    }
 
     #ifdef __WIN32__
         auto *font = TTF_OpenFont(".\\assets\\Font\\PressStart2P.ttf", 32);
@@ -52,8 +65,7 @@ int input_test() {
     key_map[SDLK_LCTRL] = Attack;
     MouseMap mouse_map;
 
-    mouse_map[SDL_BUTTON_LEFT] = Jump;
-    mouse_map[SDL_BUTTON_RIGHT] = Attack;
+    mouse_map[SDL_BUTTON_LEFT] = Select;
     ControllerMap controller_map;
     controller_map[SDL_CONTROLLER_BUTTON_B] = Attack;
     controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
@@ -61,8 +73,10 @@ int input_test() {
     Input input(key_map, mouse_map, controller_map);
     Engine engine(input);
 
-    while (true) {
-        engine.input.handle_input();
+    bool running = true;
+
+    while (running) {
+        running = !engine.input.handle_input();
         if (engine.input.is_pressed_once(Jump)) {
             test_state.jump_toggled = !test_state.jump_toggled;
         }
@@ -97,9 +111,6 @@ int input_test() {
         render_text(renderer, font, "Mouse delta x: " + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
         render_text(renderer, font, "Mouse delta y: " + std::to_string(mouseDelta.y), WHITE, 25, 10, 390);
 
-        
-
-         // game_state.input.key_map.
         int i = 0;
         for (auto key_action_pair : engine.input.key_map) {
             auto action_name = useraction_to_name(key_action_pair.second);
@@ -110,8 +121,9 @@ int input_test() {
                 SDL_Rect rect { 600, (425 + 35 * i++), 200, 25 };
                 SDL_RenderFillRect(renderer, &rect);
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                if (is_colliding(mouseCoordinates, rect)) {
-
+                if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_pressed_once(Select)) {
+                    std::cout << "Clicked. Rebinding." << std::endl;
+                    engine.input.set_action_to_rebind(key_action_pair.second);
                 }
             }
         }
@@ -134,10 +146,6 @@ void render_text(SDL_Renderer *renderer, TTF_Font *font, std::string text, SDL_C
    SDL_RenderCopy(renderer, texture, NULL, &position);
    SDL_DestroyTexture(texture);
    SDL_FreeSurface(textSurface);
-}
-
-bool is_colliding(SDL_Point &point, SDL_Rect &rect) {
-    return rect.x < point.x && point.x < rect.x + rect.w && rect.y < point.y && point.y < rect.y + rect.h;
 }
 
 std::string up_or_down(bool value) {

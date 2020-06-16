@@ -15,20 +15,15 @@ Input::Input(
     KeyMap &key_map,
     MouseMap &mouse_map,
     ControllerMap &controller_map
-): key_map{key_map}, mouse_map{mouse_map}, controller_map{controller_map} {
-}
+): key_map{key_map}, mouse_map{mouse_map}, controller_map{controller_map} {}
 
 Input::~Input() {}
 
 void Input::bind_key(SDL_Keycode key) {
+    // TODO: Handle different maps.
     this->key_map[key] = this->rebind_action;
-    std::cout << "Rebound " << useraction_to_name(this->rebind_action) << std::endl;
-}
 
-/* Shouldn't be here. */
-void quit() {
-    std::cout << "Quitting" << std::endl;
-    exit(0);
+    std::cout << "Rebound " << useraction_to_name(this->rebind_action) << std::endl;
 }
 
 void Input::set_action_to_rebind(UserAction action) {
@@ -38,7 +33,10 @@ void Input::set_action_to_rebind(UserAction action) {
     this->rebind_action = action;
 }
 
-void Input::handle_input() {
+/*
+* Updates input based on polling SDL_Events. Returns boolean whether or not "Quit" ocurred
+*/
+bool Input::handle_input() {
 
     for (auto p : this->keys_pressed_once) {
         this->keys_pressed_once[p.first] = false;
@@ -56,31 +54,7 @@ void Input::handle_input() {
     int y = 0;
     int x = 0;
     while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_MOUSEMOTION) {
-            const auto mouse_state = SDL_GetMouseState(&x, &y);
-            this->mouse_delta = {x - this->mouse_position.x, y - this->mouse_position.y};
-            this->mouse_position = {x,y};
-            // TODO Maybe do acceleration?
-        }
-
-        if (e.type == SDL_MOUSEWHEEL) {
-            // TODO: Handle   
-        }
-
-
-        switch (e.type) {
-            case SDL_MOUSEBUTTONDOWN: {
-                printf("%i", e.button.button);
-                this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
-                this->mouse_button_held[this->mouse_map[e.button.button]] = true;
-                break;
-            }
-            case SDL_MOUSEBUTTONUP:
-                this->mouse_button_held[this->mouse_map[e.button.button]] = false;
-                break;
-        }
-
-        if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) quit();
+        if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) return true;
 
         switch (this->state) {
             case Listening:
@@ -96,16 +70,47 @@ void Input::handle_input() {
                         this->keys_held_down[key_map[key]] = false;
                         break;
                     }
+                    case SDL_MOUSEBUTTONDOWN: {
+                        this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
+                        this->mouse_button_held[this->mouse_map[e.button.button]] = true;
+                        break;
+                    }
+                    case SDL_MOUSEBUTTONUP: {
+                        this->mouse_button_held[this->mouse_map[e.button.button]] = false;
+                        break;
+                    }
+                    case SDL_CONTROLLERBUTTONDOWN: {
+                        this->controller_pressed_once[this->controller_map[e.cbutton.button]] = true;
+                        this->controller_held_down[this->controller_map[e.cbutton.button]] = true;
+                        break;
+                    }
+                    case SDL_CONTROLLERBUTTONUP: {
+                        this->controller_held_down[this->controller_map[e.cbutton.button]] = false;
+                        break;
+                    }
+                    case SDL_MOUSEMOTION: {
+                        const auto mouse_state = SDL_GetMouseState(&x, &y);
+                        this->mouse_delta = { x - this->mouse_position.x, y - this->mouse_position.y };
+                        this->mouse_position = { x,y };
+                        // TODO Maybe do acceleration?
+                        break;
+                    }
+                    case SDL_MOUSEWHEEL: {
+                        std::cout << "TODO" << std::endl;
+                        break;
+                    }
                 }
                 break;
             case Rebinding:
                 switch (e.type) {
                     case SDL_KEYUP:
                         this->state = Listening;
+                        break;
                     case SDL_KEYDOWN:
                         if (!this->rebind_finished) this->bind_key(e.key.keysym.sym);
                         this->rebind_finished = true;
                         break;
+                        // TODO: Handle mouse and controller.
                 }
                 break;
             default:
@@ -113,6 +118,7 @@ void Input::handle_input() {
                 break;
         }
     }
+    return false;
 }
 
 const std::string useraction_to_name(UserAction a) {
