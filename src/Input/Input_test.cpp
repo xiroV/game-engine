@@ -118,14 +118,17 @@ int input_test() {
                 render_text(renderer, font, action_name + " " + SDL_GetKeyName(key_action_pair.first), WHITE, 25, 10, (425 + 35 * i)); 
                 
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                SDL_Rect rect { 600, (425 + 35 * i++), 200, 25 };
+                SDL_Rect rect { 600, (425 + 35 * i), 100, 25 };
                 SDL_RenderFillRect(renderer, &rect);
                 SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+                render_text(renderer, font, "Rebind", BLACK, 12, 615, 432 + 35 * i);
                 if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_pressed_once(Select)) {
                     std::cout << "Clicked. Rebinding." << std::endl;
-                    engine.input.set_action_to_rebind(key_action_pair.second);
+                    engine.input.set_action_to_rebind(key_action_pair.second, RebindingDevice::Keyboard);
                 }
+
             }
+            i++;
         }
 
         SDL_RenderPresent(renderer);
