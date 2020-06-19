@@ -63,9 +63,10 @@ int input_test() {
     key_map[SDLK_RIGHT] = MoveRight;
     key_map[SDLK_SPACE] = Jump;
     key_map[SDLK_LCTRL] = Attack;
-    MouseMap mouse_map;
 
+    MouseMap mouse_map;
     mouse_map[SDL_BUTTON_LEFT] = Select;
+
     ControllerMap controller_map;
     controller_map[SDL_CONTROLLER_BUTTON_B] = Attack;
     controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
