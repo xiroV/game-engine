@@ -7,8 +7,6 @@
 #include "Input/Input_test.hpp"
 #include "Engine.h"
 
-using namespace std;
-
 #if WITH_TESTS
 
 int main(int argc, char* argv[]) {
@@ -45,20 +43,17 @@ int main(int argc, char* argv[]) {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
-    const Uint8 *state = SDL_GetKeyboardState(NULL);
-    printf("No more unused: %s\n", state);
-
-    cout << "Finished binding keys" << endl;
+    std::cout << "Finished binding keys" << std::endl;
     
     KeyMap keys;
     MouseMap mouse;
     ControllerMap controller;
     Input input(keys, mouse, controller);
     Engine engine(input);
-    engine.input.set_action_to_rebind(Jump);
-
-    while (true) {
-        engine.input.handle_input();
+    engine.input.set_action_to_rebind(Jump, RebindingDevice::Keyboard);
+    bool running = true;
+    while (running) {
+        running = !engine.input.handle_input();
     }
 
     TTF_Quit();
