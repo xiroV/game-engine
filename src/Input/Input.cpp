@@ -107,29 +107,26 @@ bool Input::handle_input() {
                 break;
             case Rebinding:
                 switch (e.type) {
-                    case SDL_KEYUP:
-                        // I'm not sure why this isn't just done on keydown, maybe so that if you are rebinding multiple keys in a row, then the first doesn't affect the second?
-                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse) this->state = Listening;
-                        break;
                     case SDL_KEYDOWN:
-                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) this->bind_key(e.key.keysym.sym);
-                        this->rebind_finished = true;
-                        break;
-                    case SDL_CONTROLLERBUTTONUP:
-                        // I'm not sure why this isn't just done on keydown, maybe so that if you are rebinding multiple keys in a row, then the first doesn't affect the second?
-                        if (this->rebinding_device == RebindingDevice::Controller) this->state = Listening;
+                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) {
+                            this->bind_key(e.key.keysym.sym);
+                            this->rebind_finished = true;
+                            this->state = Listening;
+                        }
                         break;
                     case SDL_CONTROLLERBUTTONDOWN:
-                        if (this->rebinding_device == RebindingDevice::Controller && !this->rebind_finished) this->bind_controller_button(e.cbutton.button);
-                        this->rebind_finished = true;
-                        break;
-                    case SDL_MOUSEBUTTONUP:
-                        // I'm not sure why this isn't just done on keydown, maybe so that if you are rebinding multiple keys in a row, then the first doesn't affect the second?
-                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse) this->state = Listening;
+                        if (this->rebinding_device == RebindingDevice::Controller && !this->rebind_finished) {
+                            this->bind_controller_button(e.cbutton.button);
+                            this->rebind_finished = true;
+                            this->state = Listening;
+                        }
                         break;
                     case SDL_MOUSEBUTTONDOWN: 
-                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) this->bind_mouse_button(e.button.button);
-                        this->rebind_finished = true;
+                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) {
+                            this->bind_mouse_button(e.button.button);
+                            this->rebind_finished = true;
+                            this->state = Listening;
+                        }
                         break;
                 }
                 break;

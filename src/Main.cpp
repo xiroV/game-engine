@@ -16,7 +16,7 @@ int main(int argc, char* argv[]) {
         // Skip run command
 
         for (int i = 1; i < argc; i++) {
-            if (string("input-test").compare(argv[i]) == 0) {
+            if (std::string("input-test").compare(argv[i]) == 0) {
                 
                 any_test = true;
             }
@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (!any_test) {
-        cout << "No test was run" << endl;
+        std::cout << "No test was run" << std::endl;
     }
     return 0;
 }
