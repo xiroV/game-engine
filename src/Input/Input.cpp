@@ -24,6 +24,7 @@ void Input::bind_key(SDL_Keycode key) {
 }
 
 void Input::bind_mouse_button(Uint8 button) {
+    std::cout << "Binding mouse" << std::endl;
     this->mouse_map[button] = this->rebind_action;
 }
 
@@ -32,8 +33,7 @@ void Input::bind_controller_button(Uint8 button) {
 }
 
 void Input::set_action_to_rebind(UserAction action, RebindingDevice device) {
-    std::cout << "We want to rebind " << useraction_to_name(action) << std::endl;
-    this->state = Rebinding;
+    this->state = InputState::Rebinding;
     this->rebinding_device = device;
     this->rebind_finished = false;
     this->rebind_action = action;
@@ -61,7 +61,6 @@ bool Input::handle_input() {
     int x = 0;
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) return true;
-
         switch (this->state) {
             case Listening:
                 switch (e.type) {                    
@@ -110,10 +109,10 @@ bool Input::handle_input() {
                 switch (e.type) {
                     case SDL_KEYUP:
                         // I'm not sure why this isn't just done on keydown, maybe so that if you are rebinding multiple keys in a row, then the first doesn't affect the second?
-                        if (this->rebinding_device == RebindingDevice::Keyboard) this->state = Listening;
+                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse) this->state = Listening;
                         break;
                     case SDL_KEYDOWN:
-                        if (this->rebinding_device == RebindingDevice::Keyboard && !this->rebind_finished) this->bind_key(e.key.keysym.sym);
+                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) this->bind_key(e.key.keysym.sym);
                         this->rebind_finished = true;
                         break;
                     case SDL_CONTROLLERBUTTONUP:
@@ -126,10 +125,10 @@ bool Input::handle_input() {
                         break;
                     case SDL_MOUSEBUTTONUP:
                         // I'm not sure why this isn't just done on keydown, maybe so that if you are rebinding multiple keys in a row, then the first doesn't affect the second?
-                        if (this->rebinding_device == RebindingDevice::Mouse) this->state = Listening;
+                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse) this->state = Listening;
                         break;
-                    case SDL_MOUSEBUTTONDOWN:
-                        if (this->rebinding_device == RebindingDevice::Mouse && !this->rebind_finished) this->bind_mouse_button(e.button.button);
+                    case SDL_MOUSEBUTTONDOWN: 
+                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) this->bind_mouse_button(e.button.button);
                         this->rebind_finished = true;
                         break;
                 }

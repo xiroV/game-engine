@@ -9,8 +9,7 @@ enum InputState {
 };
 
 enum RebindingDevice {
-    Keyboard,
-    Mouse,
+    KeyboardAndMouse,
     Controller
 };
 
@@ -42,8 +41,8 @@ class Input {
         SDL_Point mouse_delta{0, 0};
         SDL_Point mouse_wheel{0, 0};
         bool handle_input();
-        InputState state = Listening;
-        RebindingDevice rebinding_device = Keyboard;
+        InputState state = InputState::Listening;
+        RebindingDevice rebinding_device = RebindingDevice::KeyboardAndMouse;
         void set_action_to_rebind(UserAction, RebindingDevice);
         KeyMap &key_map;
         KeyPresses keys_held_down;
@@ -56,9 +55,9 @@ class Input {
         ControllerPresses controller_pressed_once; 
         bool is_down(UserAction action);
         bool is_pressed_once(UserAction action);
-        Input(KeyMap &key_map, MouseMap &mouse_clicked_once, ControllerMap &mouse_button_held);
+        Input(KeyMap &, MouseMap &, ControllerMap &);
         ~Input();
-        void bind_key(SDL_Keycode key);
+        void bind_key(SDL_Keycode);
         void bind_mouse_button(Uint8);
         void bind_controller_button(Uint8);
 };
