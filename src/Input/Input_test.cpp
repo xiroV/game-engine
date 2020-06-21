@@ -113,10 +113,9 @@ int input_test() {
 
         int i = 0;
         for (auto key_action_pair : engine.input.key_map) {
-            auto action_name = useraction_to_name(key_action_pair.second);
-            if (action_name != "Not mapped") {
+            if (key_action_pair.second != 0) {
+                auto action_name = useraction_to_name(key_action_pair.second);
                 render_text(renderer, font, action_name + " " + SDL_GetKeyName(key_action_pair.first), WHITE, 25, 10, (500 + 35 * i)); 
-                
                 SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
                 SDL_Rect rect { 600, (500 + 35 * i), 100, 25 };
                 SDL_RenderFillRect(renderer, &rect);
@@ -126,8 +125,8 @@ int input_test() {
                     std::cout << action_name << std::endl;
                     engine.input.set_action_to_rebind(key_action_pair.second, RebindingDevice::KeyboardAndMouse);
                 }
+                i++;
             }
-            i++;
         }
 
         SDL_RenderPresent(renderer);

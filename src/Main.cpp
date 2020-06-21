@@ -12,16 +12,7 @@
 int main(int argc, char* argv[]) {
     bool any_test = false;
     input_test();
-    if (argc > 1) {
-        // Skip run command
 
-        for (int i = 1; i < argc; i++) {
-            if (std::string("input-test").compare(argv[i]) == 0) {
-                
-                any_test = true;
-            }
-        }
-    }
 
     if (!any_test) {
         std::cout << "No test was run" << std::endl;
