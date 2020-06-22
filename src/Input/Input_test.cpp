@@ -127,18 +127,33 @@ int input_test() {
             auto y = 535 + 35 * i;
             render_text(renderer, font, action_name, WHITE, 25, 10, y);
             int j = 0;
-            for (auto &it : engine.input.key_map) {
-                if (it.second != act || mapped_count == 0) continue;
+            for (auto &key_pair : engine.input.key_map) {
+                if (key_pair.second != act || mapped_count == 0) continue;
                 mapped_count--;
                 SDL_Rect rect{ 250 - 4 + j * 250, y - 4, 240, 32 };
                 SDL_RenderDrawRect(renderer, &rect);
-                render_text(renderer, font, SDL_GetKeyName(it.first), WHITE, 25, 250 + j * 250, y);
+                render_text(renderer, font, SDL_GetKeyName(key_pair.first), WHITE, 25, 250 + j * 250, y);
                 j++;
-                if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_pressed_once(Select)) {
-                    std::cout << "Preparing to rebind " << action_name << " with intention to erase " << SDL_GetKeyName(it.first) << std::endl;
-                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, (SDL_KeyCode) it.first);
+                if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
+                    std::cout << "Preparing to rebind " << action_name << " with intention to erase " << SDL_GetKeyName(key_pair.first) << std::endl;
+                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, (SDL_KeyCode) key_pair.first);
                 }
             }
+
+            for (auto &mouse_pair : engine.input.mouse_map) {
+                if (mouse_pair.second != act || mapped_count == 0) continue;
+                mapped_count--;
+                SDL_Rect rect{ 250 - 4 + j * 250, y - 4, 240, 32 };
+                SDL_RenderDrawRect(renderer, &rect);
+                render_text(renderer, font, SDL_GetKeyName(mouse_pair.first), WHITE, 25, 250 + j * 250, y);
+                j++;
+                if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
+                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, (Uint8) mouse_pair.first);
+                }
+            }
+
+
+
             if (mapped_count) {
                 for (; mapped_count > 0; mapped_count--) {
                     render_text(renderer, font, "Unmapped", WHITE, 25, 250 + j * 250, y);
@@ -146,7 +161,7 @@ int input_test() {
                     SDL_RenderDrawRect(renderer, &rect);
                     j++;
 
-                    if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_pressed_once(Select)) {
+                    if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
                         engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, SDLK_UNKNOWN);
                     }
                 }

@@ -21,6 +21,12 @@ enum UserAction {
     Select
 };
 
+struct MouseButtons {
+    bool left_mouse_button = false;
+    bool right_mouse_button = false;
+    bool middle_mouse_button = false;
+};
+
 typedef std::map<SDL_Keycode, UserAction> KeyMap;
 typedef std::map<UserAction, bool> KeyPresses;
 
@@ -37,14 +43,20 @@ class Input {
         bool rebind_finished = false;
         UserAction rebind_action; // TODO I guess this should be public?
         SDL_KeyCode key_to_replace = SDLK_UNKNOWN;
+        Uint8 mouse_button_to_replace = SDLK_UNKNOWN;
     public:
         SDL_Point mouse_position{0, 0};
         SDL_Point mouse_delta{0, 0};
         SDL_Point mouse_wheel{0, 0};
         bool handle_input();
+        // Find better names
+        MouseButtons mouse_clicked;
+        MouseButtons mouse_held;
+        // End
         InputState state = InputState::Listening;
         RebindingDevice rebinding_device = RebindingDevice::KeyboardAndMouse;
         void set_action_to_rebind(UserAction, RebindingDevice, SDL_KeyCode);
+        void set_action_to_rebind(UserAction, RebindingDevice, Uint8);
         KeyMap &key_map;
         KeyPresses keys_held_down;
         KeyPresses keys_pressed_once;

@@ -40,11 +40,19 @@ void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_
     this->key_to_replace = key_to_replace;
 }
 
+void Input::set_action_to_rebind(UserAction action, RebindingDevice device, Uint8 mouse_button_to_replace) {
+    this->state = InputState::Rebinding;
+    this->rebinding_device = device;
+    this->rebind_finished = false;
+    this->rebind_action = action;
+    this->mouse_button_to_replace = mouse_button_to_replace;
+}
+
 /*
 * Updates input based on polling SDL_Events. Returns boolean whether or not "Quit" ocurred
 */
 bool Input::handle_input() {
-
+    
     for (auto p : this->keys_pressed_once) {
         this->keys_pressed_once[p.first] = false;
     }
@@ -56,6 +64,10 @@ bool Input::handle_input() {
     for (auto p : this->mouse_clicked_once) {
         this->mouse_clicked_once[p.first] = false;
     }
+
+    this->mouse_clicked.left_mouse_button = false;
+    this->mouse_clicked.middle_mouse_button = false;
+    this->mouse_clicked.right_mouse_button = false;
 
     SDL_Event e;
     int y = 0;
@@ -79,9 +91,15 @@ bool Input::handle_input() {
                     case SDL_MOUSEBUTTONDOWN: {
                         this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
                         this->mouse_button_held[this->mouse_map[e.button.button]] = true;
+                        if (e.button.button == SDL_BUTTON_LEFT) this->mouse_clicked.left_mouse_button = this->mouse_held.left_mouse_button = true;
+                        else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_clicked.middle_mouse_button = this->mouse_held.middle_mouse_button = true;
+                        else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_clicked.right_mouse_button = this->mouse_held.right_mouse_button = true;
                         break;
                     }
                     case SDL_MOUSEBUTTONUP: {
+                        if (e.button.button == SDL_BUTTON_LEFT) this->mouse_held.left_mouse_button = true;
+                        else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_held.middle_mouse_button = true;
+                        else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_held.right_mouse_button = true;
                         this->mouse_button_held[this->mouse_map[e.button.button]] = false;
                         break;
                     }
@@ -113,7 +131,10 @@ bool Input::handle_input() {
                             if (this->key_to_replace != SDLK_UNKNOWN) {
                                 this->key_map.erase(this->key_to_replace);
                                 this->key_to_replace = SDLK_UNKNOWN;
-                            } // else if (this->mouse_key_to_replace)
+                            } else if (this->mouse_button_to_replace) {
+                                // TODO
+                            }
+
                             this->bind_key(e.key.keysym.sym);
                             this->rebind_finished = true;
                             this->state = Listening;
