@@ -12,11 +12,6 @@
 int main(int argc, char* argv[]) {
     bool any_test = false;
     input_test();
-
-
-    if (!any_test) {
-        std::cout << "No test was run" << std::endl;
-    }
     return 0;
 }
 

@@ -16,6 +16,8 @@ struct TestState {
 #define WHITE SDL_Color{255, 255, 255, SDL_ALPHA_OPAQUE}
 #define BLACK SDL_Color{0, 0, 0, SDL_ALPHA_OPAQUE}
 #define BLUE SDL_Color{0, 0, 255, SDL_ALPHA_OPAQUE}
+#define RED SDL_Color{255, 0, 0, SDL_ALPHA_OPAQUE}
+#define GREEN SDL_Color{0, 255, 0, SDL_ALPHA_OPAQUE}
 
 std::string up_or_down(bool value);
 std::string bool_string(bool value);
@@ -23,7 +25,7 @@ bool is_colliding(SDL_Point&, SDL_Rect&);
 void render_text(SDL_Renderer*, TTF_Font *, std::string, SDL_Color, int, int, int);
 
 int input_test() {
-    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK);
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_WINDOW_RESIZABLE);
     TestState test_state;
     TTF_Init();
     for (int i = 0; i < SDL_NumJoysticks(); ++i) {
@@ -59,6 +61,7 @@ int input_test() {
 
     KeyMap key_map;
     key_map[SDLK_LEFT] = MoveLeft;
+    key_map[SDLK_RETURN] = Attack;
     key_map[SDLK_RIGHT] = MoveRight;
     key_map[SDLK_SPACE] = Jump;
     key_map[SDLK_LCTRL] = Attack;
@@ -71,6 +74,7 @@ int input_test() {
     controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
 
     Input input(key_map, mouse_map, controller_map);
+    input.set_max_keys_per_action(2);
     Engine engine(input);
 
     while (!engine.input.handle_input()) {
@@ -110,24 +114,45 @@ int input_test() {
         render_text(renderer, font, "Mouse delta y: " + std::to_string(mouseDelta.y), WHITE, 25, 10, 390);
         render_text(renderer, font, "Mouse scroll x: " + std::to_string(mouseWheel.x), WHITE, 25, 10, 425);
         render_text(renderer, font, "Mouse scroll y: " + std::to_string(mouseWheel.y), WHITE, 25, 10, 465);
+        render_text(renderer, font, "Action", GREEN, 25, 10, 500);
+        render_text(renderer, font, "Key", GREEN, 25, 250, 500);
+        render_text(renderer, font, "Key 2", GREEN, 25, 500, 500);
+        render_text(renderer, font, "Controller", GREEN, 25, 750, 500);
 
         int i = 0;
-        for (auto key_action_pair : engine.input.key_map) {
-            if (key_action_pair.second != 0) {
-                auto action_name = useraction_to_name(key_action_pair.second);
-                render_text(renderer, font, action_name + " " + SDL_GetKeyName(key_action_pair.first), WHITE, 25, 10, (500 + 35 * i)); 
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-                SDL_Rect rect { 600, (500 + 35 * i), 100, 25 };
-                SDL_RenderFillRect(renderer, &rect);
-                SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-                render_text(renderer, font, "Rebind", BLACK, 12, 615, 507 + 35 * i);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        for (int act = 1; act < (int) UserAction::Select; act++) {
+            const auto action_name = useraction_to_name((UserAction) act);
+            int mapped_count = engine.input.max_keys_per_action;
+            auto y = 535 + 35 * i;
+            render_text(renderer, font, action_name, WHITE, 25, 10, y);
+            int j = 0;
+            for (auto &it : engine.input.key_map) {
+                if (it.second != act && mapped_count == 0) continue;
+                mapped_count--;
+                SDL_Rect rect{ 250 - 4 + j * 250, y - 4, 240, 32 };
+                SDL_RenderDrawRect(renderer, &rect);
+                render_text(renderer, font, SDL_GetKeyName(it.first), WHITE, 25, 250 + j * 250, y);
+                j++;
                 if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_pressed_once(Select)) {
-                    std::cout << action_name << std::endl;
-                    engine.input.set_action_to_rebind(key_action_pair.second, RebindingDevice::KeyboardAndMouse);
+                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, (SDL_KeyCode) it.first);
                 }
-                i++;
             }
+            if (mapped_count) {
+                for (; mapped_count > 0; mapped_count--) {
+                    render_text(renderer, font, "Unmapped", WHITE, 25, 250 + j * 250, y);
+                    SDL_Rect rect{ 250 - 4 + j * 250, y - 4, 240, 32 };
+                    SDL_RenderDrawRect(renderer, &rect);
+                    j++;
+
+                    if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_pressed_once(Select)) {
+                        engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, SDLK_UNKNOWN);
+                    }
+                }
+            }
+            i++;
         }
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
         SDL_RenderPresent(renderer);
         SDL_RenderClear(renderer);

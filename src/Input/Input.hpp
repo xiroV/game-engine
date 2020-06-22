@@ -36,14 +36,19 @@ class Input {
     private:
         bool rebind_finished = false;
         UserAction rebind_action; // TODO I guess this should be public?
+        SDL_KeyCode key_to_replace = SDLK_UNKNOWN;
     public:
+        Uint32 max_keys_per_action = 0;
         SDL_Point mouse_position{0, 0};
         SDL_Point mouse_delta{0, 0};
         SDL_Point mouse_wheel{0, 0};
         bool handle_input();
+        void set_max_keys_per_action(Uint32);
+        void disable_max_keys_per_action();
+        bool has_max_keys_per_action();
         InputState state = InputState::Listening;
         RebindingDevice rebinding_device = RebindingDevice::KeyboardAndMouse;
-        void set_action_to_rebind(UserAction, RebindingDevice);
+        void set_action_to_rebind(UserAction, RebindingDevice, SDL_KeyCode);
         KeyMap &key_map;
         KeyPresses keys_held_down;
         KeyPresses keys_pressed_once;
@@ -53,8 +58,8 @@ class Input {
         ControllerMap &controller_map;
         ControllerPresses controller_held_down;
         ControllerPresses controller_pressed_once; 
-        bool is_down(UserAction action);
-        bool is_pressed_once(UserAction action);
+        bool is_down(UserAction);
+        bool is_pressed_once(UserAction);
         Input(KeyMap &, MouseMap &, ControllerMap &);
         ~Input();
         void bind_key(SDL_Keycode);

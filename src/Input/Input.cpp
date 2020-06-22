@@ -32,11 +32,24 @@ void Input::bind_controller_button(Uint8 button) {
     this->controller_map[button] = this->rebind_action;
 }
 
-void Input::set_action_to_rebind(UserAction action, RebindingDevice device) {
+void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_KeyCode key_to_replace) {
     this->state = InputState::Rebinding;
     this->rebinding_device = device;
     this->rebind_finished = false;
     this->rebind_action = action;
+}
+
+
+void Input::set_max_keys_per_action(Uint32 max) {
+    this->max_keys_per_action = max;
+}
+
+void Input::disable_max_keys_per_action() {
+    max_keys_per_action = 0;
+}
+
+bool Input::has_max_keys_per_action() {
+    return max_keys_per_action != 0;
 }
 
 /*
@@ -140,13 +153,13 @@ bool Input::handle_input() {
 
 const std::string useraction_to_name(UserAction a) {
     switch (a) {
-        case MoveLeft:
+        case UserAction::MoveLeft:
             return "MoveLeft";
-        case MoveRight:
+        case UserAction::MoveRight:
             return "MoveRight";
-        case Jump:
+        case UserAction::Jump:
             return "Jump";
-        case Attack:
+        case UserAction::Attack:
             return "Attack";
         default:
             return "Not mapped";
