@@ -37,19 +37,7 @@ void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_
     this->rebinding_device = device;
     this->rebind_finished = false;
     this->rebind_action = action;
-}
-
-
-void Input::set_max_keys_per_action(Uint32 max) {
-    this->max_keys_per_action = max;
-}
-
-void Input::disable_max_keys_per_action() {
-    max_keys_per_action = 0;
-}
-
-bool Input::has_max_keys_per_action() {
-    return max_keys_per_action != 0;
+    this->key_to_replace = key_to_replace;
 }
 
 /*
@@ -122,6 +110,10 @@ bool Input::handle_input() {
                 switch (e.type) {
                     case SDL_KEYDOWN:
                         if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) {
+                            if (this->key_to_replace != SDLK_UNKNOWN) {
+                                this->key_map.erase(this->key_to_replace);
+                                this->key_to_replace = SDLK_UNKNOWN;
+                            } // else if (this->mouse_key_to_replace)
                             this->bind_key(e.key.keysym.sym);
                             this->rebind_finished = true;
                             this->state = Listening;
@@ -136,6 +128,10 @@ bool Input::handle_input() {
                         break;
                     case SDL_MOUSEBUTTONDOWN: 
                         if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) {
+                            if (this->key_to_replace != SDLK_UNKNOWN) {
+                                this->key_map.erase(this->key_to_replace);
+                                this->key_to_replace = SDLK_UNKNOWN;
+                            } // else if (this->mouse_key_to_replace)
                             this->bind_mouse_button(e.button.button);
                             this->rebind_finished = true;
                             this->state = Listening;

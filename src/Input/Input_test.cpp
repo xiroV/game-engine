@@ -13,6 +13,7 @@ struct TestState {
     bool select = false;
 };
 
+#define MAX_KEYS_PER_ACTION 2
 #define WHITE SDL_Color{255, 255, 255, SDL_ALPHA_OPAQUE}
 #define BLACK SDL_Color{0, 0, 0, SDL_ALPHA_OPAQUE}
 #define BLUE SDL_Color{0, 0, 255, SDL_ALPHA_OPAQUE}
@@ -74,7 +75,6 @@ int input_test() {
     controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
 
     Input input(key_map, mouse_map, controller_map);
-    input.set_max_keys_per_action(2);
     Engine engine(input);
 
     while (!engine.input.handle_input()) {
@@ -123,18 +123,19 @@ int input_test() {
         SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
         for (int act = 1; act < (int) UserAction::Select; act++) {
             const auto action_name = useraction_to_name((UserAction) act);
-            int mapped_count = engine.input.max_keys_per_action;
+            int mapped_count = MAX_KEYS_PER_ACTION;
             auto y = 535 + 35 * i;
             render_text(renderer, font, action_name, WHITE, 25, 10, y);
             int j = 0;
             for (auto &it : engine.input.key_map) {
-                if (it.second != act && mapped_count == 0) continue;
+                if (it.second != act || mapped_count == 0) continue;
                 mapped_count--;
                 SDL_Rect rect{ 250 - 4 + j * 250, y - 4, 240, 32 };
                 SDL_RenderDrawRect(renderer, &rect);
                 render_text(renderer, font, SDL_GetKeyName(it.first), WHITE, 25, 250 + j * 250, y);
                 j++;
                 if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_pressed_once(Select)) {
+                    std::cout << "Preparing to rebind " << action_name << " with intention to erase " << SDL_GetKeyName(it.first) << std::endl;
                     engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, (SDL_KeyCode) it.first);
                 }
             }

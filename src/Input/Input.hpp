@@ -38,14 +38,10 @@ class Input {
         UserAction rebind_action; // TODO I guess this should be public?
         SDL_KeyCode key_to_replace = SDLK_UNKNOWN;
     public:
-        Uint32 max_keys_per_action = 0;
         SDL_Point mouse_position{0, 0};
         SDL_Point mouse_delta{0, 0};
         SDL_Point mouse_wheel{0, 0};
         bool handle_input();
-        void set_max_keys_per_action(Uint32);
-        void disable_max_keys_per_action();
-        bool has_max_keys_per_action();
         InputState state = InputState::Listening;
         RebindingDevice rebinding_device = RebindingDevice::KeyboardAndMouse;
         void set_action_to_rebind(UserAction, RebindingDevice, SDL_KeyCode);
