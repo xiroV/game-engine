@@ -136,7 +136,7 @@ int input_test() {
                 j++;
                 if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
                     std::cout << "Preparing to rebind " << action_name << " with intention to erase " << SDL_GetKeyName(key_pair.first) << std::endl;
-                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, (SDL_KeyCode) key_pair.first);
+                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, key_pair.first);
                 }
             }
 
