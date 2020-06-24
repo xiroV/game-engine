@@ -42,7 +42,7 @@ class Input {
     private:
         bool rebind_finished = false;
         UserAction rebind_action; // TODO I guess this should be public?
-        SDL_KeyCode key_to_replace = SDLK_UNKNOWN;
+        SDL_Keycode key_to_replace = SDLK_UNKNOWN;
         Uint8 mouse_button_to_replace = SDLK_UNKNOWN;
         Uint8 controller_button_to_replace = SDL_CONTROLLER_BUTTON_INVALID;
     public:
@@ -56,7 +56,7 @@ class Input {
         // End
         InputState state = InputState::Listening;
         RebindingDevice rebinding_device = RebindingDevice::KeyboardAndMouse;
-        void set_action_to_rebind(UserAction, RebindingDevice, SDL_KeyCode);
+        void set_action_to_rebind(UserAction, RebindingDevice, SDL_Keycode);
         void set_action_to_rebind(UserAction, RebindingDevice, Uint8);
         KeyMap &key_map;
         KeyPresses keys_held_down;

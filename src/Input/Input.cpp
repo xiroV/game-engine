@@ -32,7 +32,7 @@ void Input::bind_controller_button(Uint8 button) {
     this->controller_map[button] = this->rebind_action;
 }
 
-void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_KeyCode key_to_replace) {
+void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_Keycode key_to_replace) {
     this->state = InputState::Rebinding;
     this->rebinding_device = device;
     this->rebind_finished = false;

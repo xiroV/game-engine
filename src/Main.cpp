@@ -36,7 +36,7 @@ int main(int argc, char* argv[]) {
     ControllerMap controller;
     Input input(keys, mouse, controller);
     Engine engine(input);
-    engine.input.set_action_to_rebind(Jump, RebindingDevice::Keyboard);
+    engine.input.set_action_to_rebind(Jump, RebindingDevice::KeyboardAndMouse, SDLK_UNKNOWN);
     bool running = true;
     while (running) {
         running = !engine.input.handle_input();

@@ -10,7 +10,6 @@ struct TestState {
     bool left_toggled = false;
     bool right_toggled = false;
     bool attack_toggled = false;
-    bool select = false;
 };
 
 #define MAX_KEYS_PER_ACTION 2
@@ -57,6 +56,7 @@ int input_test() {
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_CreateWindowAndRenderer(1280, 720, SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer);
+    SDL_RenderSetLogicalSize(renderer, 1280, 720);    
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
@@ -136,7 +136,7 @@ int input_test() {
                 j++;
                 if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
                     std::cout << "Preparing to rebind " << action_name << " with intention to erase " << SDL_GetKeyName(key_pair.first) << std::endl;
-                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, (SDL_KeyCode) key_pair.first);
+                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, key_pair.first);
                 }
             }
 
