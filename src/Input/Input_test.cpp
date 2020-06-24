@@ -10,7 +10,6 @@ struct TestState {
     bool left_toggled = false;
     bool right_toggled = false;
     bool attack_toggled = false;
-    bool select = false;
 };
 
 #define MAX_KEYS_PER_ACTION 2
@@ -57,7 +56,8 @@ int input_test() {
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_CreateWindowAndRenderer(1280, 720, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer);
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderSetLogicalSize(renderer, 1280, 720);    
+SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
     KeyMap key_map;
