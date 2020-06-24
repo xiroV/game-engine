@@ -33,7 +33,7 @@ typedef std::map<UserAction, bool> KeyPresses;
 typedef std::map<Uint8, UserAction> MouseMap;
 typedef std::map<UserAction, bool> MousePresses;
 
-typedef std::map<Uint8, UserAction> ControllerMap;
+typedef std::map< Uint8, UserAction> ControllerMap;
 typedef std::map<UserAction, bool> ControllerPresses;
 
 const std::string useraction_to_name(UserAction a);
@@ -44,6 +44,7 @@ class Input {
         UserAction rebind_action; // TODO I guess this should be public?
         SDL_KeyCode key_to_replace = SDLK_UNKNOWN;
         Uint8 mouse_button_to_replace = SDLK_UNKNOWN;
+        Uint8 controller_button_to_replace = SDL_CONTROLLER_BUTTON_INVALID;
     public:
         SDL_Point mouse_position{0, 0};
         SDL_Point mouse_delta{0, 0};

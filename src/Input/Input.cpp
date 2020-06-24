@@ -40,12 +40,17 @@ void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_
     this->key_to_replace = key_to_replace;
 }
 
-void Input::set_action_to_rebind(UserAction action, RebindingDevice device, Uint8 mouse_button_to_replace) {
+void Input::set_action_to_rebind(UserAction action, RebindingDevice device, Uint8 button_to_replace) {
     this->state = InputState::Rebinding;
     this->rebinding_device = device;
     this->rebind_finished = false;
     this->rebind_action = action;
-    this->mouse_button_to_replace = mouse_button_to_replace;
+    if (device == RebindingDevice::Controller) {
+        this->controller_button_to_replace = button_to_replace;
+    }
+    else {
+        this->mouse_button_to_replace = button_to_replace;
+    }
 }
 
 /*
@@ -142,6 +147,10 @@ bool Input::handle_input() {
                         break;
                     case SDL_CONTROLLERBUTTONDOWN:
                         if (this->rebinding_device == RebindingDevice::Controller && !this->rebind_finished) {
+                            if (this->controller_button_to_replace != SDL_CONTROLLER_BUTTON_INVALID) {
+                                this->controller_map.erase(this->controller_button_to_replace);
+                                this->controller_button_to_replace = SDL_CONTROLLER_BUTTON_INVALID;
+                            }
                             this->bind_controller_button(e.cbutton.button);
                             this->rebind_finished = true;
                             this->state = Listening;

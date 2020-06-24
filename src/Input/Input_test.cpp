@@ -56,7 +56,7 @@ int input_test() {
     }
     SDL_Window *window;
     SDL_Renderer *renderer;
-    SDL_CreateWindowAndRenderer(1280, 720, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer);
+    SDL_CreateWindowAndRenderer(1280, 720, SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
@@ -166,6 +166,27 @@ int input_test() {
                     }
                 }
             }
+
+            int button = -1;
+
+            for (auto& controller_pair : engine.input.controller_map) {
+                if (controller_pair.second == act) {
+                    button = (int) controller_pair.first;
+                }
+            }
+
+            
+            const auto button_text = button == -1 ? "Unmapped" : SDL_GameControllerGetStringForButton((SDL_GameControllerButton)button);
+            render_text(renderer, font, button_text, WHITE, 25, 250 + j * 250, y);
+            SDL_Rect rect{ 250 - 4 + j * 250, y - 4, 240, 32 };
+            SDL_RenderDrawRect(renderer, &rect);
+            j++;
+
+            if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
+                engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::Controller, button);
+            }
+
+
             i++;
         }
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
