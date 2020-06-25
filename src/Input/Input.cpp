@@ -101,6 +101,36 @@ bool Input::handle_input() {
                         else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_clicked.right_mouse_button = this->mouse_held.right_mouse_button = true;
                         break;
                     }
+                    case SDL_CONTROLLERAXISMOTION: {
+                        switch (e.caxis.axis) {
+                            case SDL_CONTROLLER_AXIS_INVALID:
+                                std::cout << "Invalid" << std::endl;
+                                break;
+                            case SDL_CONTROLLER_AXIS_LEFTX:
+                                std::cout << "LeftX" << std::endl;
+                                break;
+                            case SDL_CONTROLLER_AXIS_LEFTY:
+                                std::cout << "LeftY" << std::endl;
+                                break;
+                            case SDL_CONTROLLER_AXIS_RIGHTX:
+                                std::cout << "RightX" << std::endl;
+                                break;
+                            case SDL_CONTROLLER_AXIS_RIGHTY:
+                                std::cout << "RightY" << std::endl;
+                                break;
+                            case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+                                std::cout << "TriggerLeft" << std::endl;
+                                break;
+                            case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+                                std::cout << "TriggerRight" << std::endl;
+                                break;
+                            case SDL_CONTROLLER_AXIS_MAX:
+                                std::cout << "Axis_Max" << std::endl;
+                                break;
+                        }
+
+                        break;
+                    }
                     case SDL_MOUSEBUTTONUP: {
                         if (e.button.button == SDL_BUTTON_LEFT) this->mouse_held.left_mouse_button = true;
                         else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_held.middle_mouse_button = true;

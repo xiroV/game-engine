@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include <iostream>
+#include <vector>
 #include <SDL2/SDL.h>
 
 enum InputState {
@@ -19,6 +20,19 @@ enum UserAction {
     Jump,
     Attack,
     Select
+};
+
+
+
+struct ControllerAnalog {
+    double horizontal_axis = 0;
+    double vertical_axis = 0;
+};
+
+struct Controller {
+    // Mapping
+    ControllerAnalog left;
+    ControllerAnalog right;
 };
 
 struct MouseButtons {
