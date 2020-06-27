@@ -82,6 +82,7 @@ bool Input::handle_input() {
                     }
                     case SDL_KEYUP: {
                         SDL_Keycode key = e.key.keysym.sym;
+                        this->keys_pressed_once[key_map[key]] = false;
                         this->keys_held_down[key_map[key]] = false;
                         break;
                     }
@@ -136,6 +137,7 @@ bool Input::handle_input() {
                         break;
                     }
                     case SDL_CONTROLLERBUTTONUP: {
+                        this->controller_pressed_once[this->controller_map[e.cbutton.button]] = false;
                         this->controller_held_down[this->controller_map[e.cbutton.button]] = false;
                         break;
                     }
