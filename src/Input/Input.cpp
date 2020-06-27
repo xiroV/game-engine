@@ -58,17 +58,9 @@ void Input::set_action_to_rebind(UserAction action, RebindingDevice device, Uint
 */
 bool Input::handle_input() {
     
-    for (auto p : this->keys_pressed_once) {
-        this->keys_pressed_once[p.first] = false;
-    }
-
-    for (auto p : this->controller_pressed_once) {
-        this->controller_pressed_once[p.first] = false;
-    }
-
-    for (auto p : this->mouse_clicked_once) {
-        this->mouse_clicked_once[p.first] = false;
-    }
+    this->keys_pressed_once.clear();
+    this->controller_pressed_once.clear();
+    this->mouse_clicked_once.clear();
 
     this->mouse_clicked.left_mouse_button = false;
     this->mouse_clicked.middle_mouse_button = false;
