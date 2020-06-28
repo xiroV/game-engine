@@ -73,24 +73,31 @@ int input_test() {
     ControllerMap controller_map;
     controller_map[SDL_CONTROLLER_BUTTON_B] = Attack;
     controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
+    ControllerList list;
+    Controller c = {
+        {0, 0},
+        {0, 0},
+        controller_map
+    };
+    list.emplace_back(c);
 
-    Input input(key_map, mouse_map, controller_map);
+    Input input(key_map, mouse_map, list);
     Engine engine(input);
 
     while (!engine.input.handle_input()) {
-        if (engine.input.is_pressed_once(Jump)) {
+        if (engine.input.is_pressed_once(Jump, 0)) {
             test_state.jump_toggled = !test_state.jump_toggled;
         }
 
-        if (engine.input.is_pressed_once(Attack)) {
+        if (engine.input.is_pressed_once(Attack, 0)) {
             test_state.attack_toggled = !test_state.attack_toggled;
         }
 
-        if (engine.input.is_pressed_once(MoveLeft)) {
+        if (engine.input.is_pressed_once(MoveLeft, 0)) {
             test_state.left_toggled = !test_state.left_toggled;
         }
 
-        if (engine.input.is_pressed_once(MoveRight)) {
+        if (engine.input.is_pressed_once(MoveRight, 0)) {
             test_state.right_toggled = !test_state.right_toggled;
         }
 
@@ -104,10 +111,10 @@ int input_test() {
         render_text(renderer, font, std::string("Left toggled ") + bool_string(test_state.left_toggled), WHITE, 25, 10, 75);
         render_text(renderer, font, std::string("Right toggled ") + bool_string(test_state.right_toggled), WHITE, 25, 10, 110);
 
-        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_down(UserAction::Jump)), WHITE, 25, 10, 145);
-        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_down(UserAction::Attack)), WHITE, 25, 10, 180);
-        render_text(renderer, font, "Left " + up_or_down(engine.input.is_down(UserAction::MoveLeft)), WHITE, 25, 10, 215);
-        render_text(renderer, font, "Right " + up_or_down(engine.input.is_down(UserAction::MoveRight)), WHITE, 25, 10, 250);
+        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_down(UserAction::Jump, 0)), WHITE, 25, 10, 145);
+        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_down(UserAction::Attack, 0)), WHITE, 25, 10, 180);
+        render_text(renderer, font, "Left " + up_or_down(engine.input.is_down(UserAction::MoveLeft, 0)), WHITE, 25, 10, 215);
+        render_text(renderer, font, "Right " + up_or_down(engine.input.is_down(UserAction::MoveRight, 0)), WHITE, 25, 10, 250);
         render_text(renderer, font, "Mouse pos x: " + std::to_string(mouseCoordinates.x), WHITE, 25, 10, 285);
         render_text(renderer, font, "Mouse pos y: " + std::to_string(mouseCoordinates.y), WHITE, 25, 10, 320);
         render_text(renderer, font, "Mouse delta x: " + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
@@ -169,7 +176,7 @@ int input_test() {
 
             int button = -1;
 
-            for (auto& controller_pair : engine.input.controller_map) {
+            for (auto& controller_pair : engine.input.controllers[0].controller_map) {
                 if (controller_pair.second == act) {
                     button = (int) controller_pair.first;
                 }
@@ -183,7 +190,7 @@ int input_test() {
             j++;
 
             if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
-                engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::Controller, button);
+                engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::GameController, button);
             }
 
 

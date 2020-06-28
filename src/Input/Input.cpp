@@ -3,19 +3,19 @@
 #include <map>
 #include "Input.hpp"
 
-bool Input::is_down(UserAction a) {
-    return this->controller_held_down[a] || this->mouse_button_held[a] || this->keys_held_down[a];
+bool Input::is_down(UserAction a, Sint32 controller) {
+    return this->controllers[controller].controller_held_down[a] || this->mouse_button_held[a] || this->keys_held_down[a];
 }
 
-bool Input::is_pressed_once(UserAction a) {
-    return this->controller_pressed_once[a] || this->mouse_clicked_once[a] || this->keys_pressed_once[a];
+bool Input::is_pressed_once(UserAction a, Sint32 controller) {
+    return this->controllers[controller].controller_pressed_once[a] || this->mouse_clicked_once[a] || this->keys_pressed_once[a];
 }
 
 Input::Input(
     KeyMap &key_map,
     MouseMap &mouse_map,
-    ControllerMap &controller_map
-): key_map{key_map}, mouse_map{mouse_map}, controller_map{controller_map} {}
+    ControllerList &controllers
+): key_map{ key_map }, mouse_map{ mouse_map }, controllers{ controllers } {}
 
 Input::~Input() {}
 
@@ -28,8 +28,8 @@ void Input::bind_mouse_button(Uint8 button) {
     this->mouse_map[button] = this->rebind_action;
 }
 
-void Input::bind_controller_button(Uint8 button) {
-    this->controller_map[button] = this->rebind_action;
+void Input::bind_controller_button(Uint8 button, Sint32 controller) {
+    this->controllers[controller].controller_map[button] = this->rebind_action;
 }
 
 void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_Keycode key_to_replace) {
@@ -40,37 +40,42 @@ void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_
     this->key_to_replace = key_to_replace;
 }
 
+
 void Input::set_action_to_rebind(UserAction action, RebindingDevice device, Uint8 button_to_replace) {
     this->state = InputState::Rebinding;
     this->rebinding_device = device;
     this->rebind_finished = false;
     this->rebind_action = action;
-    if (device == RebindingDevice::Controller) {
+    if (device == RebindingDevice::GameController) {
         this->controller_button_to_replace = button_to_replace;
-    }
-    else {
+    } else {
         this->mouse_button_to_replace = button_to_replace;
     }
 }
 
 /*
-* Updates input based on polling SDL_Events. Returns boolean whether or not "Quit" ocurred
+* Updates input based on polling SDL_Events. Returns a boolean whether or not "Quit" ocurred
 */
 bool Input::handle_input() {
     
     this->keys_pressed_once.clear();
-    this->controller_pressed_once.clear();
+    for (auto& cont : this->controllers) {
+        cont.controller_pressed_once.clear();
+    }
     this->mouse_clicked_once.clear();
 
     this->mouse_clicked.left_mouse_button = false;
     this->mouse_clicked.middle_mouse_button = false;
     this->mouse_clicked.right_mouse_button = false;
 
+    this->escape_pressed = false;
+
     SDL_Event e;
     int y = 0;
     int x = 0;
     while (SDL_PollEvent(&e)) {
-        if (e.type == SDL_QUIT || (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE)) return true;
+        if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) this->escape_pressed = true;
+        if (e.type == SDL_QUIT) return true;
         switch (this->state) {
             case Listening:
                 switch (e.type) {                    
@@ -95,6 +100,8 @@ bool Input::handle_input() {
                         break;
                     }
                     case SDL_CONTROLLERAXISMOTION: {
+                        const auto which_controller = e.caxis.which;
+                        const auto &controller = this->controllers[which_controller];
                         switch (e.caxis.axis) {
                             case SDL_CONTROLLER_AXIS_INVALID:
                                 std::cout << "Invalid" << std::endl;
@@ -132,13 +139,19 @@ bool Input::handle_input() {
                         break;
                     }
                     case SDL_CONTROLLERBUTTONDOWN: {
-                        this->controller_pressed_once[this->controller_map[e.cbutton.button]] = true;
-                        this->controller_held_down[this->controller_map[e.cbutton.button]] = true;
+                        const Sint32 which_controller = e.cbutton.which;
+                        auto &controller = this->controllers[which_controller];
+                        auto action = controller.controller_map[e.cbutton.button];
+                        controller.controller_pressed_once[action] = true;
+                        controller.controller_held_down[action] = true;
                         break;
                     }
                     case SDL_CONTROLLERBUTTONUP: {
-                        this->controller_pressed_once[this->controller_map[e.cbutton.button]] = false;
-                        this->controller_held_down[this->controller_map[e.cbutton.button]] = false;
+                        const Sint32 which_controller = e.cbutton.which;
+                        auto &controller = this->controllers[which_controller];
+                        auto action = controller.controller_map[e.cbutton.button];
+                        controller.controller_pressed_once[action] = false;
+                        controller.controller_held_down[action] = false;
                         break;
                     }
                     case SDL_MOUSEMOTION: {
@@ -170,12 +183,13 @@ bool Input::handle_input() {
                         }
                         break;
                     case SDL_CONTROLLERBUTTONDOWN:
-                        if (this->rebinding_device == RebindingDevice::Controller && !this->rebind_finished) {
+                        if (this->rebinding_device == RebindingDevice::GameController && !this->rebind_finished) {
+                            const auto which_controller = e.cbutton.which;
                             if (this->controller_button_to_replace != SDL_CONTROLLER_BUTTON_INVALID) {
-                                this->controller_map.erase(this->controller_button_to_replace);
+                                this->controllers[which_controller].controller_map.erase(this->controller_button_to_replace);
                                 this->controller_button_to_replace = SDL_CONTROLLER_BUTTON_INVALID;
                             }
-                            this->bind_controller_button(e.cbutton.button);
+                            this->bind_controller_button(e.cbutton.button, which_controller);
                             this->rebind_finished = true;
                             this->state = Listening;
                         }
