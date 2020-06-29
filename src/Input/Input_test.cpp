@@ -28,18 +28,6 @@ int input_test() {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_WINDOW_RESIZABLE);
     TestState test_state;
     TTF_Init();
-    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-        if (SDL_IsGameController(i)) {
-            char* mapping;
-            SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", i, SDL_GameControllerNameForIndex(i));
-            auto ctrl = SDL_GameControllerOpen(i);
-            mapping = SDL_GameControllerMapping(ctrl);
-            SDL_Log("Controller %i is mapped as \"%s\".", i, mapping);
-            SDL_free(mapping);
-        } else {
-            SDL_Log("Index \'%i\' is not a compatible controller.", i);
-        }
-    }
 
     #ifdef __WIN32__
         auto *font = TTF_OpenFont(".\\assets\\Font\\PressStart2P.ttf", 32);

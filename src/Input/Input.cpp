@@ -15,7 +15,20 @@ Input::Input(
     KeyMap &key_map,
     MouseMap &mouse_map,
     ControllerList &controllers
-): key_map{ key_map }, mouse_map{ mouse_map }, controllers{ controllers } {}
+): key_map{ key_map }, mouse_map{ mouse_map }, controllers{ controllers } {
+    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            char* mapping;
+            SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", i, SDL_GameControllerNameForIndex(i));
+            auto ctrl = SDL_GameControllerOpen(i);
+            mapping = SDL_GameControllerMapping(ctrl);
+            SDL_Log("Controller %i is mapped as \"%s\".", i, mapping);
+            SDL_free(mapping);
+        } else {
+            SDL_Log("Index \'%i\' is not a compatible controller.", i);
+        }
+    }
+}
 
 Input::~Input() {}
 
@@ -76,6 +89,35 @@ bool Input::handle_input() {
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) this->escape_pressed = true;
         if (e.type == SDL_QUIT) return true;
+
+        switch (e.type) {
+            case SDL_CONTROLLERDEVICEADDED:
+                /**< The joystick device index for the ADDED event, instance id for the REMOVED or REMAPPED event */
+                std::cout << "Adding " << e.cdevice.which << std::endl;
+                if (SDL_IsGameController(e.cdevice.which)) {
+                    char* mapping;
+                    SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", e.cdevice.which, SDL_GameControllerNameForIndex(e.cdevice.which));
+                    auto ctrl = SDL_GameControllerOpen(e.cdevice.which);
+                    mapping = SDL_GameControllerMapping(ctrl);
+                    SDL_Log("Controller %i is mapped as \"%s\".", e.cdevice.which, mapping);
+                    SDL_free(mapping);
+                } else {
+                    SDL_Log("Index \'%i\' is not a compatible controller.", e.cdevice.which);
+                }
+                continue;
+            case SDL_CONTROLLERDEVICEREMOVED: {
+                std::cout << "Removing" << e.cdevice.which << std::endl;
+                SDL_GameControllerFromInstanceID(e.cdevice.which);
+                SDL_GameControllerClose(SDL_GameControllerFromInstanceID(e.cdevice.which));
+                std::cout << "Removed" << std::endl;
+                continue;
+            }
+            case SDL_CONTROLLERDEVICEREMAPPED:
+                std::cout << "Remapped" << std::endl;
+                continue;
+        }
+
+
         switch (this->state) {
             case Listening:
                 switch (e.type) {                    
@@ -148,6 +190,7 @@ bool Input::handle_input() {
                     }
                     case SDL_CONTROLLERBUTTONUP: {
                         const Sint32 which_controller = e.cbutton.which;
+                        std::cout << which_controller << std::endl;
                         auto &controller = this->controllers[which_controller];
                         auto action = controller.controller_map[e.cbutton.button];
                         controller.controller_pressed_once[action] = false;
