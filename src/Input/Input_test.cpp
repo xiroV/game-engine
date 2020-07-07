@@ -63,6 +63,7 @@ int input_test() {
     controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
     ControllerList list;
     Controller c = {
+        false,
         {0, 0},
         {0, 0},
         controller_map
