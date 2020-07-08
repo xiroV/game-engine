@@ -3,17 +3,35 @@
 #include <map>
 #include "Input.hpp"
 
+// TODO - This shouldn't check controller as well unless asked
 bool Input::is_down(UserAction a, Sint32 controller) {
     return this->controllers[controller].controller_held_down[a] || this->mouse_button_held[a] || this->keys_held_down[a];
 }
 
+// TODO - This shouldn't check controller as well unless asked
 bool Input::is_pressed_once(UserAction a, Sint32 controller) {
     return this->controllers[controller].controller_pressed_once[a] || this->mouse_clicked_once[a] || this->keys_pressed_once[a];
 }
 
 int Input::next_free_controller_slot() {
-    for (int i = 0; i < this->max_controllers; i++) {
-        if (!this->controllers.at(i).active) {
+    std::cout << "Controller size " << this->controllers.size() <<  std::endl;
+    for (size_t i = 0; i < this->max_controllers; i++) {
+        std::cout << "The next controller will be at index " << i << std::endl;
+        if (i >= this->controllers.size()) {
+            ControllerMap controller_map;
+            Controller c = {
+                false,
+                {0, 0},
+                {0, 0},
+                controller_map
+            };
+            this->controllers.emplace_back(c);
+            std::cout << "Added controller to list" << i << std::endl;
+            return i;
+        }
+
+        if (!this->controllers[i].active) {
+            std::cout << "Found inactive one." << std::endl;
             return i;
         }
     }
@@ -25,22 +43,24 @@ Input::Input(
     MouseMap &mouse_map,
     ControllerList &controllers
 ): key_map{ key_map }, mouse_map{ mouse_map }, controllers{ controllers } {
-    this->assign_new_controllers();
 }
 
 
-void assign_controller(int index, int assign_slot) {
+void assign_controller(int which, int assign_slot) {
     char* mapping;
-    SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", index, SDL_GameControllerNameForIndex(0));
-    SDL_GameController* c = SDL_GameControllerOpen(index);
+    std::cout << "which: " << which << ", assign slot " << assign_slot << std::endl;
+    SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", which, SDL_GameControllerNameForIndex(0));
+    SDL_GameController *c = SDL_GameControllerOpen(which);
     mapping = SDL_GameControllerMapping(c);
     SDL_GameControllerSetPlayerIndex(c, assign_slot);
-    SDL_Log("Controller %i is mapped as \"%s\".", index, mapping);
+    std::cout << SDL_GameControllerGetPlayerIndex(c) << std::endl;
+    SDL_Log("Controller %i is mapped as \"%s\".", which, mapping);
     SDL_free(mapping);
 }
 
 bool Input::assign_new_controllers() {
-    for (int i = 0; i < SDL_NumJoysticks(); ++i) {
+    return false;
+    /*for (int i = 0; i < SDL_NumJoysticks(); ++i) {
         if (i > this->max_controllers) {
             std::cout << "Too many controllers connected. Max of " << this->max_controllers << " allowed. This would be the " << i << std::endl;
             continue;
@@ -53,19 +73,21 @@ bool Input::assign_new_controllers() {
         }
 
         if (SDL_IsGameController(i)) {
+            std::cout << "Assigning " << i << std::endl;
             assign_controller(i, next_index);
             this->controllers[i].active = true;
         } else {
             SDL_Log("Index \'%i\' is not a compatible controller.", i);
         }
     }
-    return true;
+    return true;*/
 }
 
-
-
-bool Input::unassign_controller(int i) {
-    this->controllers[i].active = false;
+bool Input::unassign_controller(int which) {
+    SDL_GameController *controller = SDL_GameControllerFromInstanceID(which);
+    const int index = SDL_GameControllerGetPlayerIndex(controller);
+    this->controllers[index].active = false;
+    SDL_GameControllerClose(controller);
     return false;
 }
 
@@ -128,26 +150,16 @@ bool Input::handle_input() {
         if (e.type == SDL_QUIT) return true;
 
         switch (e.type) {
-            case SDL_CONTROLLERDEVICEADDED:
-                /**< The joystick device index for the ADDED event, instance id for the REMOVED or REMAPPED event */
-                std::cout << "Adding " << e.cdevice.which << std::endl;
-                
-                std::cout << "Num joysticks " << SDL_NumJoysticks() << std::endl;
-                if (SDL_IsGameController(e.cdevice.which)) {
-                    char* mapping;
-                    SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", e.cdevice.which, SDL_GameControllerNameForIndex(0));
-                    SDL_GameController *c = SDL_GameControllerOpen(e.cdevice.which);
-                    mapping = SDL_GameControllerMapping(c);
-                    SDL_GameControllerSetPlayerIndex(c, 0);
-                    SDL_Log("Controller %i is mapped as \"%s\".", e.cdevice.which, mapping);
-                    SDL_free(mapping);
-                } else {
-                    SDL_Log("Index \'%i\' is not a compatible controller.", e.cdevice.which);
-                }
+            case SDL_CONTROLLERDEVICEADDED: {
+                std::cout << "New device" << std::endl;
+                const int player = this->next_free_controller_slot();
+                assign_controller(e.cdevice.which, player);
+                this->controllers[player].active = true;
                 continue;
+            }
             case SDL_CONTROLLERDEVICEREMOVED: {
                 std::cout << "Removing" << e.cdevice.which << std::endl;
-                SDL_GameControllerClose(SDL_GameControllerFromInstanceID(e.cdevice.which));
+                unassign_controller(e.cdevice.which);
                 std::cout << "Removed" << std::endl;
                 continue;
             }
@@ -220,15 +232,17 @@ bool Input::handle_input() {
                         break;
                     }
                     case SDL_CONTROLLERBUTTONDOWN: {
-                        const Sint32 which_controller = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
-                        auto &controller = this->controllers[which_controller];
+                        const Sint32 player = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
+                        auto &controller = this->controllers[player];
                         auto action = controller.controller_map[e.cbutton.button];
+                        std::cout << action << std::endl;
+
                         controller.controller_pressed_once[action] = true;
                         controller.controller_held_down[action] = true;
                         break;
                     }
                     case SDL_CONTROLLERBUTTONUP: {
-                        const Sint32 which_controller = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));;
+                        const Sint32 which_controller = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
                         std::cout << which_controller << std::endl;
                         auto &controller = this->controllers[which_controller];
                         auto action = controller.controller_map[e.cbutton.button];

@@ -12,7 +12,7 @@ struct TestState {
     bool attack_toggled = false;
 };
 
-#define MAX_KEYS_PER_ACTION 2
+constexpr auto MAX_KEYS_PER_ACTION = 2;
 #define WHITE SDL_Color{255, 255, 255, SDL_ALPHA_OPAQUE}
 #define BLACK SDL_Color{0, 0, 0, SDL_ALPHA_OPAQUE}
 #define BLUE SDL_Color{0, 0, 255, SDL_ALPHA_OPAQUE}
@@ -41,6 +41,7 @@ int input_test() {
         std::cout << TTF_GetError() << std::endl;
         return 1;
     }
+
     SDL_Window *window;
     SDL_Renderer *renderer;
     SDL_CreateWindowAndRenderer(1280, 720, SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer);

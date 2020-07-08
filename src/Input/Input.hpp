@@ -43,7 +43,7 @@ struct Controller {
     bool active = false;
     ControllerAnalog left = { 0, 0 };
     ControllerAnalog right = { 0, 0 };
-    ControllerMap &controller_map;
+    ControllerMap controller_map;
     ControllerPresses controller_held_down;
     ControllerPresses controller_pressed_once;
 };
