@@ -65,6 +65,7 @@ int input_test() {
     ControllerList list;
     Controller c = {
         false,
+        false,
         {0, 0},
         {0, 0},
         controller_map

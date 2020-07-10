@@ -3,14 +3,14 @@
 #include <map>
 #include "Input.hpp"
 
-// TODO - This shouldn't check controller as well unless asked
-bool Input::is_down(UserAction a, Sint32 controller) {
-    return this->controllers[controller].controller_held_down[a] || this->mouse_button_held[a] || this->keys_held_down[a];
+bool Input::is_down(UserAction a, bool with_controller, Sint32 controller) {
+    const bool controller_down = with_controller ? this->controllers[controller].controller_pressed_once[a] : false;
+    return controller_down || this->mouse_button_held[a] || this->keys_held_down[a];
 }
 
-// TODO - This shouldn't check controller as well unless asked
-bool Input::is_pressed_once(UserAction a, Sint32 controller) {
-    return this->controllers[controller].controller_pressed_once[a] || this->mouse_clicked_once[a] || this->keys_pressed_once[a];
+bool Input::is_pressed_once(UserAction a, bool with_controller,  Sint32 controller) {
+    const bool controller_down = with_controller ? this->controllers[controller].controller_pressed_once[a] : false;
+    return controller_down || this->mouse_clicked_once[a] || this->keys_pressed_once[a];
 }
 
 int Input::next_free_controller_slot() {
@@ -20,6 +20,7 @@ int Input::next_free_controller_slot() {
         if (i >= this->controllers.size()) {
             ControllerMap controller_map;
             Controller c = {
+                false,
                 false,
                 {0, 0},
                 {0, 0},
@@ -42,8 +43,7 @@ Input::Input(
     KeyMap &key_map,
     MouseMap &mouse_map,
     ControllerList &controllers
-): key_map{ key_map }, mouse_map{ mouse_map }, controllers{ controllers } {
-}
+): key_map{ key_map }, mouse_map{ mouse_map }, controllers{ controllers } {}
 
 
 void assign_controller(int which, int assign_slot) {
@@ -56,31 +56,6 @@ void assign_controller(int which, int assign_slot) {
     std::cout << SDL_GameControllerGetPlayerIndex(c) << std::endl;
     SDL_Log("Controller %i is mapped as \"%s\".", which, mapping);
     SDL_free(mapping);
-}
-
-bool Input::assign_new_controllers() {
-    return false;
-    /*for (int i = 0; i < SDL_NumJoysticks(); ++i) {
-        if (i > this->max_controllers) {
-            std::cout << "Too many controllers connected. Max of " << this->max_controllers << " allowed. This would be the " << i << std::endl;
-            continue;
-        }
-
-        const int next_index = this->next_free_controller_slot();
-        if (next_index == -1) {
-            std::cout << "No free slots for new controller. Either increase max_controllers value or disconnect others." << std::endl;
-            return false;
-        }
-
-        if (SDL_IsGameController(i)) {
-            std::cout << "Assigning " << i << std::endl;
-            assign_controller(i, next_index);
-            this->controllers[i].active = true;
-        } else {
-            SDL_Log("Index \'%i\' is not a compatible controller.", i);
-        }
-    }
-    return true;*/
 }
 
 bool Input::unassign_controller(int which) {
@@ -98,7 +73,6 @@ void Input::bind_key(SDL_Keycode key) {
 }
 
 void Input::bind_mouse_button(Uint8 button) {
-    std::cout << "Binding mouse" << std::endl;
     this->mouse_map[button] = this->rebind_action;
 }
 
@@ -128,7 +102,7 @@ void Input::set_action_to_rebind(UserAction action, RebindingDevice device, Uint
 }
 
 
-/* 
+/**
 * Updates input based on polling SDL_Events. Returns a boolean whether or not "Quit" ocurred
 */
 bool Input::handle_input() {

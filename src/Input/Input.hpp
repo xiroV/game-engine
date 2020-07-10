@@ -41,6 +41,7 @@ struct ControllerAnalog {
 
 struct Controller {
     bool active = false;
+    bool rebinding = false;
     ControllerAnalog left = { 0, 0 };
     ControllerAnalog right = { 0, 0 };
     ControllerMap controller_map;
@@ -80,9 +81,7 @@ class Input {
         RebindingDevice rebinding_device = RebindingDevice::KeyboardAndMouse;
         void set_action_to_rebind(UserAction, RebindingDevice, SDL_Keycode);
         void set_action_to_rebind(UserAction, RebindingDevice, Uint8);
-        bool unassign_controller(int i);
-        bool assign_new_controllers();
-
+        bool unassign_controller(int);
         int next_free_controller_slot();
         KeyMap &key_map;
         KeyPresses keys_held_down;
@@ -92,8 +91,8 @@ class Input {
         MousePresses mouse_button_held;
         Uint8 max_controllers = 8;
         std::vector<struct Controller> &controllers;
-        bool is_down(UserAction, Sint32);
-        bool is_pressed_once(UserAction, Sint32);
+        bool is_down(UserAction, bool = false, Sint32 = 0);
+        bool is_pressed_once(UserAction, bool = false, Sint32 = 0);
         Input(KeyMap&, MouseMap&, ControllerList&);
         ~Input();
         void bind_key(SDL_Keycode);
