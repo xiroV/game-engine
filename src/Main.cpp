@@ -28,20 +28,24 @@ int main(int argc, char* argv[]) {
     SDL_CreateWindowAndRenderer(800, 600, SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI, &window, &renderer);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
-
-    std::cout << "Finished binding keys" << std::endl;
     
-    KeyMap keys;
-    MouseMap mouse;
-    ControllerMap controller;
-    Input input(keys, mouse, controller);
+    KeyMap key_map;
+    MouseMap mouse_map;
+    ControllerMap controller_map;
+    ControllerList list;
+    Controller c = {
+        false,
+        false,
+        {0, 0},
+        {0, 0},
+        controller_map
+    };
+    list.emplace_back(c);
+    Input input(key_map, mouse_map, list);
     Engine engine(input);
-    engine.input.set_action_to_rebind(Jump, RebindingDevice::KeyboardAndMouse, SDLK_UNKNOWN);
+    engine.input.start_rebind_keyboard_action(Jump, SDLK_UNKNOWN);
     bool running = true;
-    while (running) {
-        running = !engine.input.handle_input();
-    }
-
+    while (!engine.input.handle_input()) {}
     TTF_Quit();
     SDL_DestroyWindow(window);
     SDL_Quit();

@@ -134,7 +134,7 @@ int input_test() {
                 j++;
                 if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
                     std::cout << "Preparing to rebind " << action_name << " with intention to erase " << SDL_GetKeyName(key_pair.first) << std::endl;
-                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, key_pair.first);
+                    engine.input.start_rebind_keyboard_action((UserAction) act, key_pair.first);
                 }
             }
 
@@ -146,7 +146,7 @@ int input_test() {
                 render_text(renderer, font, SDL_GetKeyName(mouse_pair.first), WHITE, 25, 250 + j * 250, y);
                 j++;
                 if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
-                    engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, (Uint8) mouse_pair.first);
+                    engine.input.start_rebind_mouse_action((UserAction)act, (Uint8) mouse_pair.first);
                 }
             }
 
@@ -160,7 +160,7 @@ int input_test() {
                     j++;
 
                     if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
-                        engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::KeyboardAndMouse, SDLK_UNKNOWN);
+                        engine.input.start_rebind_keyboard_action((UserAction)act, SDLK_UNKNOWN);
                     }
                 }
             }
@@ -181,7 +181,7 @@ int input_test() {
             j++;
 
             if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
-                engine.input.set_action_to_rebind((UserAction)act, RebindingDevice::GameController, button);
+                engine.input.start_rebind_action_controller((UserAction)act, 0, button);
             }
 
 

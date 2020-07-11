@@ -47,6 +47,8 @@ struct Controller {
     ControllerMap controller_map;
     ControllerPresses controller_held_down;
     ControllerPresses controller_pressed_once;
+    UserAction rebind_action = (UserAction) 0;
+    Uint8 button_to_replace = 0;
 };
 
 typedef std::vector<Controller> ControllerList;
@@ -63,8 +65,10 @@ const std::string useraction_to_name(UserAction a);
 class Input {
     private:
         bool rebind_finished = false;
+        bool rebinding_keyboard = false;
+        bool rebinding_mouse = false;
         UserAction rebind_action; // TODO I guess this should be public?
-        SDL_Keycode key_to_replace = SDLK_UNKNOWN;
+        SDL_Keycode keyboard_key_to_replace = SDLK_UNKNOWN;
         Uint8 mouse_button_to_replace = SDLK_UNKNOWN;
         Uint8 controller_button_to_replace = SDL_CONTROLLER_BUTTON_INVALID;
     public:
@@ -77,10 +81,9 @@ class Input {
         MouseButtons mouse_clicked;
         MouseButtons mouse_held;
         // TODO End
-        InputState state = InputState::Listening;
-        RebindingDevice rebinding_device = RebindingDevice::KeyboardAndMouse;
-        void set_action_to_rebind(UserAction, RebindingDevice, SDL_Keycode);
-        void set_action_to_rebind(UserAction, RebindingDevice, Uint8);
+        void start_rebind_keyboard_action(UserAction, SDL_Keycode);
+        void start_rebind_mouse_action(UserAction, Uint8);
+        void start_rebind_action_controller(UserAction, Sint32, Uint8);
         bool unassign_controller(int);
         int next_free_controller_slot();
         KeyMap &key_map;

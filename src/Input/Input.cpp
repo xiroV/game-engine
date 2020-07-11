@@ -10,7 +10,11 @@ bool Input::is_down(UserAction a, bool with_controller, Sint32 controller) {
 
 bool Input::is_pressed_once(UserAction a, bool with_controller,  Sint32 controller) {
     const bool controller_down = with_controller ? this->controllers[controller].controller_pressed_once[a] : false;
-    return controller_down || this->mouse_clicked_once[a] || this->keys_pressed_once[a];
+    if (with_controller) this->controllers[controller].controller_pressed_once[a] = false;
+    const bool mouse_down = this->mouse_clicked_once[a];
+    const bool key_down = this->keys_pressed_once[a];
+    this->mouse_clicked_once[a] = this->keys_pressed_once[a] = false;
+    return controller_down || mouse_down || key_down;
 }
 
 int Input::next_free_controller_slot() {
@@ -80,40 +84,31 @@ void Input::bind_controller_button(Uint8 button, Sint32 controller) {
     this->controllers[controller].controller_map[button] = this->rebind_action;
 }
 
-void Input::set_action_to_rebind(UserAction action, RebindingDevice device, SDL_Keycode key_to_replace) {
-    this->state = InputState::Rebinding;
-    this->rebinding_device = device;
-    this->rebind_finished = false;
+void Input::start_rebind_keyboard_action(UserAction action, SDL_Keycode key_to_replace) {
+    this->rebinding_keyboard = true;
     this->rebind_action = action;
-    this->key_to_replace = key_to_replace;
+    this->keyboard_key_to_replace = key_to_replace;
 }
 
-
-void Input::set_action_to_rebind(UserAction action, RebindingDevice device, Uint8 button_to_replace) {
-    this->state = InputState::Rebinding;
-    this->rebinding_device = device;
-    this->rebind_finished = false;
+void Input::start_rebind_mouse_action(UserAction action, Uint8 button_to_replace) {
+    this->rebinding_mouse = true;
     this->rebind_action = action;
-    if (device == RebindingDevice::GameController) {
-        this->controller_button_to_replace = button_to_replace;
-    } else {
-        this->mouse_button_to_replace = button_to_replace;
-    }
+    this->mouse_button_to_replace = button_to_replace;
 }
 
+void Input::start_rebind_action_controller(UserAction action, Sint32 controller, Uint8 button_to_replace) {
+    this->controllers[controller].rebinding = true;
+    this->controllers[controller].rebind_action = action;
+    this->controllers[controller].button_to_replace = button_to_replace;
+}
 
 /**
 * Updates input based on polling SDL_Events. Returns a boolean whether or not "Quit" ocurred
 */
 bool Input::handle_input() {
-    
-    this->keys_pressed_once.clear();
-    this->mouse_clicked_once.clear();
-
     this->mouse_clicked.left_mouse_button = false;
     this->mouse_clicked.middle_mouse_button = false;
     this->mouse_clicked.right_mouse_button = false;
-
     this->escape_pressed = false;
 
     SDL_Event e;
@@ -125,162 +120,106 @@ bool Input::handle_input() {
 
         switch (e.type) {
             case SDL_CONTROLLERDEVICEADDED: {
-                std::cout << "New device" << std::endl;
                 const int player = this->next_free_controller_slot();
                 assign_controller(e.cdevice.which, player);
                 this->controllers[player].active = true;
                 continue;
             }
             case SDL_CONTROLLERDEVICEREMOVED: {
-                std::cout << "Removing" << e.cdevice.which << std::endl;
                 unassign_controller(e.cdevice.which);
-                std::cout << "Removed" << std::endl;
                 continue;
             }
             case SDL_CONTROLLERDEVICEREMAPPED:
                 std::cout << "Remapped" << std::endl;
                 continue;
-        }
-
-        switch (this->state) {
-            case Listening:
-                switch (e.type) {                    
-                    case SDL_KEYDOWN: {
-                        SDL_Keycode key = e.key.keysym.sym;
-                        if (e.key.repeat == 0) this->keys_pressed_once[key_map[key]] = true;
-                        this->keys_held_down[key_map[key]] = true;
-                        break;
-                    }
-                    case SDL_KEYUP: {
-                        SDL_Keycode key = e.key.keysym.sym;
-                        this->keys_pressed_once[key_map[key]] = false;
-                        this->keys_held_down[key_map[key]] = false;
-                        break;
-                    }
-                    case SDL_MOUSEBUTTONDOWN: {
-                        this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
-                        this->mouse_button_held[this->mouse_map[e.button.button]] = true;
-                        if (e.button.button == SDL_BUTTON_LEFT) this->mouse_clicked.left_mouse_button = this->mouse_held.left_mouse_button = true;
-                        else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_clicked.middle_mouse_button = this->mouse_held.middle_mouse_button = true;
-                        else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_clicked.right_mouse_button = this->mouse_held.right_mouse_button = true;
-                        break;
-                    }
-                    case SDL_CONTROLLERAXISMOTION: {
-                        // const auto which_controller = e.caxis.which;
-                        // const auto &controller = this->controllers[which_controller];
-                        std::cout << e.caxis.which << std::endl;
-                        switch (e.caxis.axis) {
-                            case SDL_CONTROLLER_AXIS_INVALID:
-                                std::cout << "Invalid" << std::endl;
-                                break;
-                            case SDL_CONTROLLER_AXIS_LEFTX:
-                                std::cout << "LeftX" << std::endl;
-                                break;
-                            case SDL_CONTROLLER_AXIS_LEFTY:
-                                std::cout << "LeftY" << std::endl;
-                                break;
-                            case SDL_CONTROLLER_AXIS_RIGHTX:
-                                std::cout << "RightX" << std::endl;
-                                break;
-                            case SDL_CONTROLLER_AXIS_RIGHTY:
-                                std::cout << "RightY" << std::endl;
-                                break;
-                            case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
-                                std::cout << "TriggerLeft" << std::endl;
-                                break;
-                            case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-                                std::cout << "TriggerRight" << std::endl;
-                                break;
-                            case SDL_CONTROLLER_AXIS_MAX:
-                                std::cout << "Axis_Max" << std::endl;
-                                break;
-                        }
-
-                        break;
-                    }
-                    case SDL_MOUSEBUTTONUP: {
-                        if (e.button.button == SDL_BUTTON_LEFT) this->mouse_held.left_mouse_button = true;
-                        else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_held.middle_mouse_button = true;
-                        else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_held.right_mouse_button = true;
-                        this->mouse_button_held[this->mouse_map[e.button.button]] = false;
-                        break;
-                    }
-                    case SDL_CONTROLLERBUTTONDOWN: {
-                        const Sint32 player = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
-                        auto &controller = this->controllers[player];
-                        auto action = controller.controller_map[e.cbutton.button];
-                        std::cout << action << std::endl;
-
-                        controller.controller_pressed_once[action] = true;
-                        controller.controller_held_down[action] = true;
-                        break;
-                    }
-                    case SDL_CONTROLLERBUTTONUP: {
-                        const Sint32 which_controller = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
-                        std::cout << which_controller << std::endl;
-                        auto &controller = this->controllers[which_controller];
-                        auto action = controller.controller_map[e.cbutton.button];
-                        controller.controller_pressed_once[action] = false;
-                        controller.controller_held_down[action] = false;
-                        break;
-                    }
-                    case SDL_MOUSEMOTION: {
-                        const auto mouse_state = SDL_GetMouseState(&x, &y);
-                        this->mouse_delta = { x - this->mouse_position.x, y - this->mouse_position.y };
-                        this->mouse_position = { x,y };
-                        break;
-                    }
-                    case SDL_MOUSEWHEEL: {
-                        this->mouse_wheel = { e.wheel.x, e.wheel.y };
-                        break;
-                    }
+            case SDL_KEYDOWN: {
+                SDL_Keycode key = e.key.keysym.sym;
+                if (e.key.repeat == 0) this->keys_pressed_once[key_map[key]] = true;
+                this->keys_held_down[key_map[key]] = true;
+                continue;
+            }
+            case SDL_KEYUP: {
+                SDL_Keycode key = e.key.keysym.sym;
+                this->keys_pressed_once[key_map[key]] = false;
+                this->keys_held_down[key_map[key]] = false;
+                continue;
+            }
+            case SDL_MOUSEBUTTONDOWN: {
+                this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
+                this->mouse_button_held[this->mouse_map[e.button.button]] = true;
+                if (e.button.button == SDL_BUTTON_LEFT) this->mouse_clicked.left_mouse_button = this->mouse_held.left_mouse_button = true;
+                else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_clicked.middle_mouse_button = this->mouse_held.middle_mouse_button = true;
+                else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_clicked.right_mouse_button = this->mouse_held.right_mouse_button = true;
+                continue;
+            }
+            case SDL_CONTROLLERAXISMOTION: {
+                // const auto which_controller = e.caxis.which;
+                // const auto &controller = this->controllers[which_controller];
+                std::cout << e.caxis.which << std::endl;
+                switch (e.caxis.axis) {
+                    case SDL_CONTROLLER_AXIS_INVALID:
+                        std::cout << "Invalid" << std::endl;
+                        continue;
+                    case SDL_CONTROLLER_AXIS_LEFTX:
+                        std::cout << "LeftX" << std::endl;
+                        continue;
+                    case SDL_CONTROLLER_AXIS_LEFTY:
+                        std::cout << "LeftY" << std::endl;
+                        continue;
+                    case SDL_CONTROLLER_AXIS_RIGHTX:
+                        std::cout << "RightX" << std::endl;
+                        continue;
+                    case SDL_CONTROLLER_AXIS_RIGHTY:
+                        std::cout << "RightY" << std::endl;
+                        continue;
+                    case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
+                        std::cout << "TriggerLeft" << std::endl;
+                        continue;
+                    case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
+                        std::cout << "TriggerRight" << std::endl;
+                        continue;
+                    case SDL_CONTROLLER_AXIS_MAX:
+                        std::cout << "Axis_Max" << std::endl;
+                        continue;
                 }
-                break;
-            case Rebinding:
-                switch (e.type) {
-                    case SDL_KEYDOWN:
-                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) {
-                            if (this->key_to_replace != SDLK_UNKNOWN) {
-                                this->key_map.erase(this->key_to_replace);
-                                this->key_to_replace = SDLK_UNKNOWN;
-                            } else if (this->mouse_button_to_replace) {
-                                // TODO
-                            }
+                continue;
+            }
+            case SDL_MOUSEBUTTONUP: {
+                if (e.button.button == SDL_BUTTON_LEFT) this->mouse_held.left_mouse_button = true;
+                else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_held.middle_mouse_button = true;
+                else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_held.right_mouse_button = true;
+                this->mouse_button_held[this->mouse_map[e.button.button]] = false;
+                continue;
+            }
+            case SDL_CONTROLLERBUTTONDOWN: {
+                const Sint32 player = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
+                auto &controller = this->controllers[player];
+                auto action = controller.controller_map[e.cbutton.button];
+                std::cout << action << std::endl;
 
-                            this->bind_key(e.key.keysym.sym);
-                            this->rebind_finished = true;
-                            this->state = Listening;
-                        }
-                        break;
-                    case SDL_CONTROLLERBUTTONDOWN:
-                        if (this->rebinding_device == RebindingDevice::GameController && !this->rebind_finished) {
-                            const auto which_player = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
-                            std::cout << which_player << std::endl;
-                            if (this->controller_button_to_replace != SDL_CONTROLLER_BUTTON_INVALID) {
-                                this->controllers[which_player].controller_map.erase(this->controller_button_to_replace);
-                                this->controller_button_to_replace = SDL_CONTROLLER_BUTTON_INVALID;
-                            }
-                            this->bind_controller_button(e.cbutton.button, which_player);
-                            this->rebind_finished = true;
-                            this->state = Listening;
-                        }
-                        break;
-                    case SDL_MOUSEBUTTONDOWN: 
-                        if (this->rebinding_device == RebindingDevice::KeyboardAndMouse && !this->rebind_finished) {
-                            if (this->key_to_replace != SDLK_UNKNOWN) {
-                                this->key_map.erase(this->key_to_replace);
-                                this->key_to_replace = SDLK_UNKNOWN;
-                            } // else if (this->mouse_key_to_replace)
-                            this->bind_mouse_button(e.button.button);
-                            this->rebind_finished = true;
-                            this->state = Listening;
-                        }
-                        break;
-                }
-                break;
-            default:
-                std::cout << "Unhandled case: " << this->state << std::endl;
-                break;
+                controller.controller_pressed_once[action] = true;
+                controller.controller_held_down[action] = true;
+                continue;
+            }
+            case SDL_CONTROLLERBUTTONUP: {
+                const Sint32 which_controller = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
+                std::cout << which_controller << std::endl;
+                auto &controller = this->controllers[which_controller];
+                auto action = controller.controller_map[e.cbutton.button];
+                controller.controller_pressed_once[action] = false;
+                controller.controller_held_down[action] = false;
+                continue;
+            }
+            case SDL_MOUSEMOTION: {
+                const auto mouse_state = SDL_GetMouseState(&x, &y);
+                this->mouse_delta = { x - this->mouse_position.x, y - this->mouse_position.y };
+                this->mouse_position = { x,y };
+                continue;
+            }
+            case SDL_MOUSEWHEEL: {
+                this->mouse_wheel = { e.wheel.x, e.wheel.y };
+                continue;
+            }
         }
     }
     return false;
