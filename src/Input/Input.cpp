@@ -134,8 +134,21 @@ bool Input::handle_input() {
                 continue;
             case SDL_KEYDOWN: {
                 SDL_Keycode key = e.key.keysym.sym;
-                if (e.key.repeat == 0) this->keys_pressed_once[key_map[key]] = true;
-                this->keys_held_down[key_map[key]] = true;
+                if (this->rebinding_keyboard || this->rebinding_mouse) {
+                    this->bind_key(key);
+                    if (this->keyboard_key_to_replace != SDLK_UNKNOWN) {
+                        this->key_map.erase(this->keyboard_key_to_replace);
+                        this->keyboard_key_to_replace = SDLK_UNKNOWN;
+                        this->rebinding_keyboard = rebinding_keyboard;
+                    } else if (this->mouse_button_to_replace != SDLK_UNKNOWN) {
+                        this->mouse_map.erase(this->mouse_button_to_replace);
+                        this->mouse_button_to_replace = SDLK_UNKNOWN;
+                        this->rebinding_mouse = false;
+                    }
+                } else {
+                    if (e.key.repeat == 0) this->keys_pressed_once[key_map[key]] = true;
+                    this->keys_held_down[key_map[key]] = true;
+                }
                 continue;
             }
             case SDL_KEYUP: {
@@ -145,11 +158,25 @@ bool Input::handle_input() {
                 continue;
             }
             case SDL_MOUSEBUTTONDOWN: {
-                this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
-                this->mouse_button_held[this->mouse_map[e.button.button]] = true;
-                if (e.button.button == SDL_BUTTON_LEFT) this->mouse_clicked.left_mouse_button = this->mouse_held.left_mouse_button = true;
-                else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_clicked.middle_mouse_button = this->mouse_held.middle_mouse_button = true;
-                else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_clicked.right_mouse_button = this->mouse_held.right_mouse_button = true;
+                const Uint8 button = e.button.button;
+                if (this->rebinding_mouse || this->rebinding_keyboard) {
+                    this->bind_mouse_button(button);
+                    if (this->keyboard_key_to_replace != SDLK_UNKNOWN) {
+                        this->key_map.erase(this->keyboard_key_to_replace);
+                        this->keyboard_key_to_replace = SDLK_UNKNOWN;
+                        this->rebinding_keyboard = false;
+                    } else if (this->mouse_button_to_replace != SDLK_UNKNOWN) {
+                        this->mouse_map.erase(this->mouse_button_to_replace);
+                        this->mouse_button_to_replace = SDLK_UNKNOWN;
+                        this->rebinding_mouse = false;
+                    }
+                } else {
+                    this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
+                    this->mouse_button_held[this->mouse_map[e.button.button]] = true;
+                    if (e.button.button == SDL_BUTTON_LEFT) this->mouse_clicked.left_mouse_button = this->mouse_held.left_mouse_button = true;
+                    else if (e.button.button == SDL_BUTTON_MIDDLE) this->mouse_clicked.middle_mouse_button = this->mouse_held.middle_mouse_button = true;
+                    else if (e.button.button == SDL_BUTTON_RIGHT) this->mouse_clicked.right_mouse_button = this->mouse_held.right_mouse_button = true;
+                }
                 continue;
             }
             case SDL_CONTROLLERAXISMOTION: {

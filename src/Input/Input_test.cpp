@@ -76,19 +76,19 @@ int input_test() {
     Engine engine(input);
 
     while (!engine.input.handle_input()) {
-        if (engine.input.is_pressed_once(Jump, 0)) {
+        if (engine.input.is_pressed_once(Jump)) {
             test_state.jump_toggled = !test_state.jump_toggled;
         }
 
-        if (engine.input.is_pressed_once(Attack, 0)) {
+        if (engine.input.is_pressed_once(Attack)) {
             test_state.attack_toggled = !test_state.attack_toggled;
         }
 
-        if (engine.input.is_pressed_once(MoveLeft, 0)) {
+        if (engine.input.is_pressed_once(MoveLeft)) {
             test_state.left_toggled = !test_state.left_toggled;
         }
 
-        if (engine.input.is_pressed_once(MoveRight, 0)) {
+        if (engine.input.is_pressed_once(MoveRight)) {
             test_state.right_toggled = !test_state.right_toggled;
         }
 
@@ -102,10 +102,10 @@ int input_test() {
         render_text(renderer, font, std::string("Left toggled ") + bool_string(test_state.left_toggled), WHITE, 25, 10, 75);
         render_text(renderer, font, std::string("Right toggled ") + bool_string(test_state.right_toggled), WHITE, 25, 10, 110);
 
-        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_down(UserAction::Jump, 0)), WHITE, 25, 10, 145);
-        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_down(UserAction::Attack, 0)), WHITE, 25, 10, 180);
-        render_text(renderer, font, "Left " + up_or_down(engine.input.is_down(UserAction::MoveLeft, 0)), WHITE, 25, 10, 215);
-        render_text(renderer, font, "Right " + up_or_down(engine.input.is_down(UserAction::MoveRight, 0)), WHITE, 25, 10, 250);
+        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_down(UserAction::Jump)), WHITE, 25, 10, 145);
+        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_down(UserAction::Attack)), WHITE, 25, 10, 180);
+        render_text(renderer, font, "Left " + up_or_down(engine.input.is_down(UserAction::MoveLeft)), WHITE, 25, 10, 215);
+        render_text(renderer, font, "Right " + up_or_down(engine.input.is_down(UserAction::MoveRight)), WHITE, 25, 10, 250);
         render_text(renderer, font, "Mouse pos x: " + std::to_string(mouseCoordinates.x), WHITE, 25, 10, 285);
         render_text(renderer, font, "Mouse pos y: " + std::to_string(mouseCoordinates.y), WHITE, 25, 10, 320);
         render_text(renderer, font, "Mouse delta x: " + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
@@ -160,6 +160,7 @@ int input_test() {
                     j++;
 
                     if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
+                        std::cout << "Preparing to rebind " << action_name << " with intention to write to unmapped." << std::endl;
                         engine.input.start_rebind_keyboard_action((UserAction)act, SDLK_UNKNOWN);
                     }
                 }
