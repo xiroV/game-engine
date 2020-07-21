@@ -65,8 +65,7 @@ const std::string useraction_to_name(UserAction a);
 class Input {
     private:
         bool rebind_finished = false;
-        bool rebinding_keyboard = false;
-        bool rebinding_mouse = false;
+        bool rebinding = false;
         UserAction rebind_action; // TODO I guess this should be public?
         SDL_Keycode keyboard_key_to_replace = SDLK_UNKNOWN;
         Uint8 mouse_button_to_replace = SDLK_UNKNOWN;

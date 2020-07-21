@@ -85,13 +85,13 @@ void Input::bind_controller_button(Uint8 button, Sint32 controller) {
 }
 
 void Input::start_rebind_keyboard_action(UserAction action, SDL_Keycode key_to_replace) {
-    this->rebinding_keyboard = true;
+    this->rebinding = true;
     this->rebind_action = action;
     this->keyboard_key_to_replace = key_to_replace;
 }
 
 void Input::start_rebind_mouse_action(UserAction action, Uint8 button_to_replace) {
-    this->rebinding_mouse = true;
+    this->rebinding = true;
     this->rebind_action = action;
     this->mouse_button_to_replace = button_to_replace;
 }
@@ -130,21 +130,20 @@ bool Input::handle_input() {
                 continue;
             }
             case SDL_CONTROLLERDEVICEREMAPPED:
-                std::cout << "Remapped" << std::endl;
+                std::cout << "Remapped, unhandled" << std::endl;
                 continue;
             case SDL_KEYDOWN: {
                 SDL_Keycode key = e.key.keysym.sym;
-                if (this->rebinding_keyboard || this->rebinding_mouse) {
+                if (this->rebinding) {
                     this->bind_key(key);
                     if (this->keyboard_key_to_replace != SDLK_UNKNOWN) {
                         this->key_map.erase(this->keyboard_key_to_replace);
                         this->keyboard_key_to_replace = SDLK_UNKNOWN;
-                        this->rebinding_keyboard = rebinding_keyboard;
                     } else if (this->mouse_button_to_replace != SDLK_UNKNOWN) {
                         this->mouse_map.erase(this->mouse_button_to_replace);
                         this->mouse_button_to_replace = SDLK_UNKNOWN;
-                        this->rebinding_mouse = false;
                     }
+                    this->rebinding = false;
                 } else {
                     if (e.key.repeat == 0) this->keys_pressed_once[key_map[key]] = true;
                     this->keys_held_down[key_map[key]] = true;
@@ -159,17 +158,16 @@ bool Input::handle_input() {
             }
             case SDL_MOUSEBUTTONDOWN: {
                 const Uint8 button = e.button.button;
-                if (this->rebinding_mouse || this->rebinding_keyboard) {
+                if (this->rebinding) {
                     this->bind_mouse_button(button);
                     if (this->keyboard_key_to_replace != SDLK_UNKNOWN) {
                         this->key_map.erase(this->keyboard_key_to_replace);
                         this->keyboard_key_to_replace = SDLK_UNKNOWN;
-                        this->rebinding_keyboard = false;
                     } else if (this->mouse_button_to_replace != SDLK_UNKNOWN) {
                         this->mouse_map.erase(this->mouse_button_to_replace);
                         this->mouse_button_to_replace = SDLK_UNKNOWN;
-                        this->rebinding_mouse = false;
                     }
+                    this->rebinding = false;
                 } else {
                     this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;
                     this->mouse_button_held[this->mouse_map[e.button.button]] = true;
