@@ -18,6 +18,16 @@ bool Input::is_pressed_once(UserAction a, bool with_controller,  Sint32 controll
     return controller_down || mouse_down || key_down;
 }
 
+bool Input::is_key_down(SDL_Keycode key) {
+    return this->direct_key_held_down[key];
+}
+
+bool Input::is_key_pressed_once(SDL_Keycode key) {
+    auto pressed = this->direct_key_pressed_once[key];
+    this->direct_key_pressed_once[key] = false;
+    return pressed;
+}
+
 int Input::next_free_controller_slot() {
     std::cout << "Controller size " << this->controllers.size() <<  std::endl;
     for (size_t i = 0; i < this->max_controllers; i++) {

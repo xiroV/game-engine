@@ -22,6 +22,7 @@ enum UserAction {
     Select
 };
 
+typedef std::map<SDL_Keycode, bool> DirectKeyMap;
 typedef std::map<SDL_Keycode, UserAction> KeyMap;
 typedef std::map<UserAction, bool> KeyPresses;
 
@@ -91,6 +92,8 @@ class Input {
         KeyMap &key_map;
         KeyPresses keys_held_down;
         KeyPresses keys_pressed_once;
+        DirectKeyMap direct_key_held_down;
+        DirectKeyMap direct_key_pressed_once;
         MouseMap &mouse_map;
         MousePresses mouse_clicked_once;
         MousePresses mouse_button_held;
@@ -98,6 +101,8 @@ class Input {
         std::vector<struct Controller> &controllers;
         bool is_down(UserAction, bool = false, Sint32 = 0);
         bool is_pressed_once(UserAction, bool = false, Sint32 = 0);
+        bool is_key_down(SDL_Keycode);
+        bool is_key_pressed_once(SDL_Keycode);
         Input(KeyMap&, MouseMap&, ControllerList&);
         ~Input();
         void bind_key(SDL_Keycode);
