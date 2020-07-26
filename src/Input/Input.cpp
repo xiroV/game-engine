@@ -135,7 +135,6 @@ bool Input::handle_input() {
             case SDL_KEYDOWN: {
                 SDL_Keycode key = e.key.keysym.sym;
                 if (this->rebinding) {
-                    this->bind_key(key);
                     if (this->keyboard_key_to_replace != SDLK_UNKNOWN) {
                         this->key_map.erase(this->keyboard_key_to_replace);
                         this->keyboard_key_to_replace = SDLK_UNKNOWN;
@@ -143,6 +142,7 @@ bool Input::handle_input() {
                         this->mouse_map.erase(this->mouse_button_to_replace);
                         this->mouse_button_to_replace = SDLK_UNKNOWN;
                     }
+                    this->bind_key(key);
                     this->rebinding = false;
                 } else {
                     if (e.key.repeat == 0) this->keys_pressed_once[key_map[key]] = true;
@@ -159,7 +159,6 @@ bool Input::handle_input() {
             case SDL_MOUSEBUTTONDOWN: {
                 const Uint8 button = e.button.button;
                 if (this->rebinding) {
-                    this->bind_mouse_button(button);
                     if (this->keyboard_key_to_replace != SDLK_UNKNOWN) {
                         this->key_map.erase(this->keyboard_key_to_replace);
                         this->keyboard_key_to_replace = SDLK_UNKNOWN;
@@ -167,6 +166,7 @@ bool Input::handle_input() {
                         this->mouse_map.erase(this->mouse_button_to_replace);
                         this->mouse_button_to_replace = SDLK_UNKNOWN;
                     }
+                    this->bind_mouse_button(button);
                     this->rebinding = false;
                 } else {
                     this->mouse_clicked_once[this->mouse_map[e.button.button]] = true;

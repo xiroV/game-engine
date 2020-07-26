@@ -19,8 +19,9 @@ constexpr auto MAX_KEYS_PER_ACTION = 2;
 #define RED SDL_Color{255, 0, 0, SDL_ALPHA_OPAQUE}
 #define GREEN SDL_Color{0, 255, 0, SDL_ALPHA_OPAQUE}
 
-std::string up_or_down(bool value);
-std::string bool_string(bool value);
+std::string up_or_down(bool);
+std::string bool_string(bool);
+std::string mouse_button_to_name(Uint8);
 bool is_colliding(SDL_Point&, SDL_Rect&);
 void render_text(SDL_Renderer*, TTF_Font *, std::string, SDL_Color, int, int, int);
 
@@ -143,7 +144,7 @@ int input_test() {
                 mapped_count--;
                 SDL_Rect rect{ 250 - 4 + j * 250, y - 4, 240, 32 };
                 SDL_RenderDrawRect(renderer, &rect);
-                render_text(renderer, font, SDL_GetKeyName(mouse_pair.first), WHITE, 25, 250 + j * 250, y);
+                render_text(renderer, font, mouse_button_to_name(mouse_pair.first), WHITE, 25, 250 + j * 250, y);
                 j++;
                 if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
                     engine.input.start_rebind_mouse_action((UserAction)act, (Uint8) mouse_pair.first);
@@ -208,6 +209,23 @@ void render_text(SDL_Renderer *renderer, TTF_Font *font, std::string text, SDL_C
    SDL_RenderCopy(renderer, texture, NULL, &position);
    SDL_DestroyTexture(texture);
    SDL_FreeSurface(textSurface);
+}
+
+std::string mouse_button_to_name(Uint8 button) {
+    switch (button) {
+        case SDL_BUTTON_LEFT:
+            return "Mouse Left";
+        case SDL_BUTTON_RIGHT:
+            return "Mouse Right";
+        case SDL_BUTTON_MIDDLE:
+            return "Mouse Middle";
+        case SDL_BUTTON_X1:
+            return "Mouse X1";
+        case SDL_BUTTON_X2:
+            return "Mouse X2";
+        default:
+            return "Unhandled mouse button";
+    }
 }
 
 std::string up_or_down(bool value) {
