@@ -29,6 +29,8 @@ int Input::next_free_controller_slot() {
                 false,
                 {0, 0},
                 {0, 0},
+                0,
+                0,
                 controller_map
             };
             this->controllers.emplace_back(c);
@@ -186,30 +188,30 @@ bool Input::handle_input() {
                 continue;
             }
             case SDL_CONTROLLERAXISMOTION: {
-                // const auto which_controller = e.caxis.which;
-                // const auto &controller = this->controllers[which_controller];
-                std::cout << e.caxis.which << std::endl;
+                const auto which_controller = e.caxis.which;
+                const int player_index = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.caxis.which));
+                std::cout << "player: " << player_index << std::endl;
+                Controller &c = this->controllers[player_index];
                 switch (e.caxis.axis) {
                     case SDL_CONTROLLER_AXIS_INVALID:
-                        std::cout << "Invalid" << std::endl;
                         continue;
                     case SDL_CONTROLLER_AXIS_LEFTX:
-                        std::cout << "LeftX" << std::endl;
+                        c.left.horizontal_axis = e.caxis.value;
                         continue;
                     case SDL_CONTROLLER_AXIS_LEFTY:
-                        std::cout << "LeftY" << std::endl;
+                        c.left.vertical_axis = e.caxis.value;
                         continue;
                     case SDL_CONTROLLER_AXIS_RIGHTX:
-                        std::cout << "RightX" << std::endl;
+                        c.right.horizontal_axis = e.caxis.value;
                         continue;
                     case SDL_CONTROLLER_AXIS_RIGHTY:
-                        std::cout << "RightY" << std::endl;
+                        c.right.vertical_axis = e.caxis.value;
                         continue;
                     case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
-                        std::cout << "TriggerLeft" << std::endl;
+                        c.left_trigger = e.caxis.value;
                         continue;
                     case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-                        std::cout << "TriggerRight" << std::endl;
+                        c.right_trigger = e.caxis.value;
                         continue;
                     case SDL_CONTROLLER_AXIS_MAX:
                         std::cout << "Axis_Max" << std::endl;

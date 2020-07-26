@@ -34,9 +34,9 @@ typedef std::map<UserAction, bool> ControllerPresses;
 
 struct ControllerAnalog {
     // Left is positive, right is negative
-    double horizontal_axis = 0;
+    Sint32 horizontal_axis = 0;
     // Up is positive, down is negative
-    double vertical_axis = 0;
+    Sint32 vertical_axis = 0;
 };
 
 struct Controller {
@@ -44,6 +44,8 @@ struct Controller {
     bool rebinding = false;
     ControllerAnalog left = { 0, 0 };
     ControllerAnalog right = { 0, 0 };
+    Sint16 left_trigger = 0;
+    Sint16 right_trigger = 0;
     ControllerMap controller_map;
     ControllerPresses controller_held_down;
     ControllerPresses controller_pressed_once;
