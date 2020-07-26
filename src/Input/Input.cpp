@@ -228,11 +228,18 @@ bool Input::handle_input() {
                 const Sint32 player = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
                 std::cout << player << std::endl;
                 auto &controller = this->controllers[player];
-                auto action = controller.controller_map[e.cbutton.button];
-                std::cout << action << std::endl;
-
-                controller.controller_pressed_once[action] = true;
-                controller.controller_held_down[action] = true;
+                const Uint8 button = e.cbutton.button;
+                if (controller.rebinding) {
+                    if (controller.button_to_replace != SDL_CONTROLLER_BUTTON_INVALID) {
+                        controller.controller_map.erase(controller.button_to_replace);
+                    }
+                    controller.controller_map[button] = controller.rebind_action;
+                    controller.rebinding = false;
+                } else {
+                    auto action = controller.controller_map[e.cbutton.button];
+                    controller.controller_pressed_once[action] = true;
+                    controller.controller_held_down[action] = true;
+                }
                 continue;
             }
             case SDL_CONTROLLERBUTTONUP: {
