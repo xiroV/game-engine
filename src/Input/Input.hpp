@@ -49,6 +49,7 @@ struct Controller {
     ControllerPresses controller_pressed_once;
     UserAction rebind_action = (UserAction) 0;
     Uint8 button_to_replace = 0;
+    int instance_id = -1;
 };
 
 typedef std::vector<Controller> ControllerList;

@@ -51,27 +51,28 @@ Input::Input(
 ): key_map{ key_map }, mouse_map{ mouse_map }, controllers{ controllers } {}
 
 
-void assign_controller(int which, int assign_slot) {
+int assign_controller(int which, int assign_slot) {
     char* mapping;
-    std::cout << "which: " << which << ", assign slot " << assign_slot << std::endl;
     SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", which, SDL_GameControllerNameForIndex(which));
     SDL_GameController *c = SDL_GameControllerOpen(which);
     mapping = SDL_GameControllerMapping(c);
     SDL_GameControllerSetPlayerIndex(c, assign_slot);
-    std::cout << SDL_GameControllerGetPlayerIndex(c) << std::endl;
     SDL_Log("Controller %i is mapped as \"%s\".", which, mapping);
     SDL_free(mapping);
+    return SDL_JoystickInstanceID(SDL_JoystickFromPlayerIndex(assign_slot));
 }
 
 bool Input::unassign_controller(int which) {
     SDL_GameController *controller = SDL_GameControllerFromInstanceID(which);
-    if (controller == nullptr) {
-        std::cout << "NULL" << std::endl;
-        return true;
+    if (controller == nullptr) return true;
+    std::cout << "pre find. inde" << std::endl;
+    for (auto& c : this->controllers) {
+        if (c.instance_id == which) {
+            c.active = false;
+            c.instance_id = -1;
+            break;
+        }
     }
-    const int index = SDL_GameControllerGetPlayerIndex(controller);
-    std::cout << "Index: " + std::to_string(index) << std::endl;
-    this->controllers[index].active = false;
     SDL_GameControllerClose(controller);
     return false;
 }
@@ -127,8 +128,9 @@ bool Input::handle_input() {
         switch (e.type) {
             case SDL_CONTROLLERDEVICEADDED: {
                 const int player = this->next_free_controller_slot();
-                assign_controller(e.cdevice.which, player);
+                const int instance_id = assign_controller(e.cdevice.which, player);
                 this->controllers[player].active = true;
+                this->controllers[player].instance_id = instance_id;
                 continue;
             }
             case SDL_CONTROLLERDEVICEREMOVED: {
