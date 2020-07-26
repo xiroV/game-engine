@@ -104,13 +104,15 @@ int input_test() {
         render_text(renderer, font, "Controllers connected: " + std::to_string(SDL_NumJoysticks()), WHITE, 25, 625, 5);
         int j = 0;
         for (auto &controller : engine.input.controllers) {
-            render_text(renderer, font, "Controller " + std::to_string(j), WHITE, 12, 625, 35 + 35 * j);
-            render_text(renderer, font, "Left horizontal: " + std::to_string(controller.left.horizontal_axis), WHITE, 12, 625, 50 + 35 * j);
-            render_text(renderer, font, "Left vertical: " + std::to_string(controller.left.vertical_axis), WHITE, 12, 625, 70 + 35 * j);
-            render_text(renderer, font, "Right horizontal: " + std::to_string(controller.right.horizontal_axis), WHITE, 12, 625, 90 + 35 * j);
-            render_text(renderer, font, "Right vertical: " + std::to_string(controller.right.vertical_axis), WHITE, 12, 625, 110 + 35 * j);
-            render_text(renderer, font, "Left trigger: " + std::to_string(controller.left_trigger), WHITE, 12, 625, 130 + 35 * j);
-            render_text(renderer, font, "Right trigger: " + std::to_string(controller.right_trigger), WHITE, 12, 625, 150 + 35 * j);
+            const Uint8 render_x = j % 2;
+            const Uint8 render_y = j / 2;
+            render_text(renderer, font, "Controller " + std::to_string(j), WHITE, 12, 625 + render_x * 330, 35 + 100 * render_y);
+            render_text(renderer, font, "Left horizontal: " + std::to_string(controller.left.horizontal_axis), WHITE, 12, 625 + render_x * 330, 50 + 100 * render_y);
+            render_text(renderer, font, "Left vertical: " + std::to_string(controller.left.vertical_axis), WHITE, 12, 625 + render_x * 330, 70 + 100 * render_y);
+            render_text(renderer, font, "Right horizontal: " + std::to_string(controller.right.horizontal_axis), WHITE, 12, 625 + render_x * 330, 90 + 100 * render_y);
+            render_text(renderer, font, "Right vertical: " + std::to_string(controller.right.vertical_axis), WHITE, 12, 625 + render_x * 330, 110 + 100 * render_y);
+            render_text(renderer, font, "Left trigger: " + std::to_string(controller.left_trigger), WHITE, 12, 625 + render_x * 330, 130 + 100 * render_y);
+            render_text(renderer, font, "Right trigger: " + std::to_string(controller.right_trigger), WHITE, 12, 625 + render_x * 330, 150 + 100 * render_y);
             j++;
         }
 
