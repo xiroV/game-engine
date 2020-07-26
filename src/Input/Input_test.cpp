@@ -77,25 +77,31 @@ int input_test() {
     Engine engine(input);
 
     while (!engine.input.handle_input()) {
-        if (engine.input.is_pressed_once(Jump)) {
+        if (engine.input.is_pressed_once(Jump, true, 0)) {
             test_state.jump_toggled = !test_state.jump_toggled;
         }
 
-        if (engine.input.is_pressed_once(Attack)) {
+        if (engine.input.is_pressed_once(Attack, true, 0)) {
             test_state.attack_toggled = !test_state.attack_toggled;
         }
 
-        if (engine.input.is_pressed_once(MoveLeft)) {
+        if (engine.input.is_pressed_once(MoveLeft, true, 0)) {
             test_state.left_toggled = !test_state.left_toggled;
         }
 
-        if (engine.input.is_pressed_once(MoveRight)) {
+        if (engine.input.is_pressed_once(MoveRight, true, 0)) {
             test_state.right_toggled = !test_state.right_toggled;
         }
 
         auto mouseCoordinates = engine.input.mouse_position;
         auto mouseDelta = engine.input.mouse_delta;
         auto mouseWheel = engine.input.mouse_wheel;
+
+
+        // Controller info
+        render_text(renderer, font, "Controllers connected: " + std::to_string(SDL_NumJoysticks()), WHITE, 25, 625, 5);
+
+
         // For each action, show bound key;
         // On click, set rebind for a key.
         render_text(renderer, font, std::string("Jump toggled ") + bool_string(test_state.jump_toggled), WHITE, 25, 10, 5);
@@ -103,10 +109,10 @@ int input_test() {
         render_text(renderer, font, std::string("Left toggled ") + bool_string(test_state.left_toggled), WHITE, 25, 10, 75);
         render_text(renderer, font, std::string("Right toggled ") + bool_string(test_state.right_toggled), WHITE, 25, 10, 110);
 
-        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_down(UserAction::Jump)), WHITE, 25, 10, 145);
-        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_down(UserAction::Attack)), WHITE, 25, 10, 180);
-        render_text(renderer, font, "Left " + up_or_down(engine.input.is_down(UserAction::MoveLeft)), WHITE, 25, 10, 215);
-        render_text(renderer, font, "Right " + up_or_down(engine.input.is_down(UserAction::MoveRight)), WHITE, 25, 10, 250);
+        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_down(UserAction::Jump, true, 0)), WHITE, 25, 10, 145);
+        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_down(UserAction::Attack, true, 0)), WHITE, 25, 10, 180);
+        render_text(renderer, font, "Left " + up_or_down(engine.input.is_down(UserAction::MoveLeft, true, 0)), WHITE, 25, 10, 215);
+        render_text(renderer, font, "Right " + up_or_down(engine.input.is_down(UserAction::MoveRight, true, 0)), WHITE, 25, 10, 250);
         render_text(renderer, font, "Mouse pos x: " + std::to_string(mouseCoordinates.x), WHITE, 25, 10, 285);
         render_text(renderer, font, "Mouse pos y: " + std::to_string(mouseCoordinates.y), WHITE, 25, 10, 320);
         render_text(renderer, font, "Mouse delta x: " + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
@@ -189,6 +195,7 @@ int input_test() {
 
             i++;
         }
+
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 
         SDL_RenderPresent(renderer);
@@ -205,7 +212,7 @@ int input_test() {
 void render_text(SDL_Renderer *renderer, TTF_Font *font, std::string text, SDL_Color color, int font_size, int x, int y) {
    SDL_Surface *textSurface = TTF_RenderText_Solid(font, text.c_str(), color);
    SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer, textSurface);
-   SDL_Rect position = { x, y, (int) (font_size * text.length()), font_size };
+   SDL_Rect position = { x, y, (int) floor(font_size * text.length()), font_size };
    SDL_RenderCopy(renderer, texture, NULL, &position);
    SDL_DestroyTexture(texture);
    SDL_FreeSurface(textSurface);

@@ -1,10 +1,11 @@
 #include <SDL2/SDL.h>
 #include <iostream>
+#include <string>
 #include <map>
 #include "Input.hpp"
 
 bool Input::is_down(UserAction a, bool with_controller, Sint32 controller) {
-    const bool controller_down = with_controller ? this->controllers[controller].controller_pressed_once[a] : false;
+    const bool controller_down = with_controller ? this->controllers[controller].controller_held_down[a] : false;
     return controller_down || this->mouse_button_held[a] || this->keys_held_down[a];
 }
 
@@ -53,7 +54,7 @@ Input::Input(
 void assign_controller(int which, int assign_slot) {
     char* mapping;
     std::cout << "which: " << which << ", assign slot " << assign_slot << std::endl;
-    SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", which, SDL_GameControllerNameForIndex(0));
+    SDL_Log("Index \'%i\' is a compatible controller, named \'%s\'", which, SDL_GameControllerNameForIndex(which));
     SDL_GameController *c = SDL_GameControllerOpen(which);
     mapping = SDL_GameControllerMapping(c);
     SDL_GameControllerSetPlayerIndex(c, assign_slot);
@@ -64,7 +65,12 @@ void assign_controller(int which, int assign_slot) {
 
 bool Input::unassign_controller(int which) {
     SDL_GameController *controller = SDL_GameControllerFromInstanceID(which);
+    if (controller == nullptr) {
+        std::cout << "NULL" << std::endl;
+        return true;
+    }
     const int index = SDL_GameControllerGetPlayerIndex(controller);
+    std::cout << "Index: " + std::to_string(index) << std::endl;
     this->controllers[index].active = false;
     SDL_GameControllerClose(controller);
     return false;
@@ -218,6 +224,7 @@ bool Input::handle_input() {
             }
             case SDL_CONTROLLERBUTTONDOWN: {
                 const Sint32 player = SDL_GameControllerGetPlayerIndex(SDL_GameControllerFromInstanceID(e.cbutton.which));
+                std::cout << player << std::endl;
                 auto &controller = this->controllers[player];
                 auto action = controller.controller_map[e.cbutton.button];
                 std::cout << action << std::endl;
