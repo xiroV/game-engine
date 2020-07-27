@@ -49,7 +49,7 @@ bool Input::is_controller_held(Uint8 button, Uint8 controller) {
 }
 
 int Input::next_free_controller_slot() {
-    for (size_t i = 0; i < this->max_controllers; i++) {
+    for (int i = 0; i < this->max_controllers; i++) {
         if (i >= this->controllers.size()) {
             ControllerMap controller_map;
             Controller c = {
@@ -107,6 +107,18 @@ bool Input::unassign_controller(int which) {
 
 Input::~Input() {}
 
+//void Input::bind_key_to_action(SDL_Keycode key, Sint32 action) {
+//    // TODO
+//}
+//
+//void Input::bind_mouse_button_to_action(Uint8 button, Sint32 action) {
+//    // TODO
+//}
+//
+//void Input::bind_controller_button_to_action(Uint8 button, Sint32 action, Sint32 controller) {
+//    // TODO
+//}
+
 void Input::bind_key(SDL_Keycode key) {
     this->key_map[key] = this->rebind_action;
 }
@@ -146,6 +158,8 @@ bool Input::handle_input() {
     SDL_Event e;
     int y = 0;
     int x = 0;
+    this->mouse_wheel = { 0, 0 };
+    this->mouse_delta = { 0, 0 };
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) this->escape_pressed = true;
         if (e.type == SDL_QUIT) return true;

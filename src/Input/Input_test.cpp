@@ -213,7 +213,6 @@ int input_test() {
                 engine.input.start_rebind_action_controller((UserAction)act, 0, button);
             }
 
-
             i++;
         }
 
