@@ -12,6 +12,14 @@ struct TestState {
     bool attack_toggled = false;
 };
 
+enum UserAction {
+    MoveLeft = 1,
+    MoveRight,
+    Jump,
+    Attack,
+    Select
+};
+
 constexpr auto MAX_KEYS_PER_ACTION = 2;
 #define WHITE SDL_Color{255, 255, 255, SDL_ALPHA_OPAQUE}
 #define BLACK SDL_Color{0, 0, 0, SDL_ALPHA_OPAQUE}
@@ -22,6 +30,7 @@ constexpr auto MAX_KEYS_PER_ACTION = 2;
 std::string up_or_down(bool);
 std::string bool_string(bool);
 std::string mouse_button_to_name(Uint8);
+const std::string useraction_to_name(Sint32 a);
 bool is_colliding(SDL_Point&, SDL_Rect&);
 void render_text(SDL_Renderer*, TTF_Font *, std::string, SDL_Color, int, int, int);
 
@@ -79,19 +88,19 @@ int input_test() {
     Engine engine(input);
 
     while (!engine.input.handle_input()) {
-        if (engine.input.is_pressed_once(Jump, true, 0)) {
+        if (engine.input.is_pressed(Jump, true, 0)) {
             test_state.jump_toggled = !test_state.jump_toggled;
         }
 
-        if (engine.input.is_pressed_once(Attack, true, 0)) {
+        if (engine.input.is_pressed(Attack, true, 0)) {
             test_state.attack_toggled = !test_state.attack_toggled;
         }
 
-        if (engine.input.is_pressed_once(MoveLeft, true, 0)) {
+        if (engine.input.is_pressed(MoveLeft, true, 0)) {
             test_state.left_toggled = !test_state.left_toggled;
         }
 
-        if (engine.input.is_pressed_once(MoveRight, true, 0)) {
+        if (engine.input.is_pressed(MoveRight, true, 0)) {
             test_state.right_toggled = !test_state.right_toggled;
         }
 
@@ -123,10 +132,10 @@ int input_test() {
         render_text(renderer, font, std::string("Left toggled ") + bool_string(test_state.left_toggled), WHITE, 25, 10, 75);
         render_text(renderer, font, std::string("Right toggled ") + bool_string(test_state.right_toggled), WHITE, 25, 10, 110);
 
-        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_down(UserAction::Jump, true, 0)), WHITE, 25, 10, 145);
-        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_down(UserAction::Attack, true, 0)), WHITE, 25, 10, 180);
-        render_text(renderer, font, "Left " + up_or_down(engine.input.is_down(UserAction::MoveLeft, true, 0)), WHITE, 25, 10, 215);
-        render_text(renderer, font, "Right " + up_or_down(engine.input.is_down(UserAction::MoveRight, true, 0)), WHITE, 25, 10, 250);
+        render_text(renderer, font, "Jump " + up_or_down(engine.input.is_held(UserAction::Jump, true, 0)), WHITE, 25, 10, 145);
+        render_text(renderer, font, "Attack " + up_or_down(engine.input.is_held(UserAction::Attack, true, 0)), WHITE, 25, 10, 180);
+        render_text(renderer, font, "Left " + up_or_down(engine.input.is_held(UserAction::MoveLeft, true, 0)), WHITE, 25, 10, 215);
+        render_text(renderer, font, "Right " + up_or_down(engine.input.is_held(UserAction::MoveRight, true, 0)), WHITE, 25, 10, 250);
         render_text(renderer, font, "Mouse pos x: " + std::to_string(mouseCoordinates.x), WHITE, 25, 10, 285);
         render_text(renderer, font, "Mouse pos y: " + std::to_string(mouseCoordinates.y), WHITE, 25, 10, 320);
         render_text(renderer, font, "Mouse delta x: " + std::to_string(mouseDelta.x), WHITE, 25, 10, 355);
@@ -153,7 +162,7 @@ int input_test() {
                 SDL_RenderDrawRect(renderer, &rect);
                 render_text(renderer, font, SDL_GetKeyName(key_pair.first), WHITE, 25, 250 + j * 250, y);
                 j++;
-                if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
+                if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_mouse_button_pressed(SDL_BUTTON_LEFT)) {
                     std::cout << "Preparing to rebind " << action_name << " with intention to erase " << SDL_GetKeyName(key_pair.first) << std::endl;
                     engine.input.start_rebind_keyboard_action((UserAction) act, key_pair.first);
                 }
@@ -166,12 +175,10 @@ int input_test() {
                 SDL_RenderDrawRect(renderer, &rect);
                 render_text(renderer, font, mouse_button_to_name(mouse_pair.first), WHITE, 25, 250 + j * 250, y);
                 j++;
-                if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
+                if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_mouse_button_pressed(SDL_BUTTON_LEFT)) {
                     engine.input.start_rebind_mouse_action((UserAction)act, (Uint8) mouse_pair.first);
                 }
             }
-
-
 
             if (mapped_count) {
                 for (; mapped_count > 0; mapped_count--) {
@@ -180,7 +187,7 @@ int input_test() {
                     SDL_RenderDrawRect(renderer, &rect);
                     j++;
 
-                    if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
+                    if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_mouse_button_pressed(SDL_BUTTON_LEFT)) {
                         std::cout << "Preparing to rebind " << action_name << " with intention to write to unmapped." << std::endl;
                         engine.input.start_rebind_keyboard_action((UserAction)act, SDLK_UNKNOWN);
                     }
@@ -202,7 +209,7 @@ int input_test() {
             SDL_RenderDrawRect(renderer, &rect);
             j++;
 
-            if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.mouse_clicked.left_mouse_button) {
+            if (SDL_PointInRect(&mouseCoordinates, &rect) && engine.input.is_mouse_button_pressed(SDL_BUTTON_LEFT)) {
                 engine.input.start_rebind_action_controller((UserAction)act, 0, button);
             }
 
@@ -255,4 +262,19 @@ std::string up_or_down(bool value) {
 
 std::string bool_string(bool value) {
     return value ? "true" : "false";
+}
+
+const std::string useraction_to_name(Sint32 a) {
+    switch (a) {
+        case UserAction::MoveLeft:
+            return "MoveLeft";
+        case UserAction::MoveRight:
+            return "MoveRight";
+        case UserAction::Jump:
+            return "Jump";
+        case UserAction::Attack:
+            return "Attack";
+        default:
+            return "Not mapped";
+    }
 }
