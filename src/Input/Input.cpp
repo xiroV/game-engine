@@ -99,7 +99,7 @@ int assign_controller(int which, int assign_slot) {
 bool Input::unassign_controller(int which) {
     SDL_GameController *controller = SDL_GameControllerFromInstanceID(which);
     if (controller == nullptr) return true;
-    std::cout << "pre find. inde" << std::endl;
+    
     for (auto& c : this->controllers) {
         if (c.instance_id == which) {
             c.active = false;
@@ -107,6 +107,7 @@ bool Input::unassign_controller(int which) {
             break;
         }
     }
+
     SDL_GameControllerClose(controller);
     return false;
 }
