@@ -37,16 +37,25 @@ struct ControllerAnalog {
 struct Controller {
     // Is controller struct currently mapped to a connected controller
     bool active = false;
-    // Is button is being rebound
+    // Is a button is being rebound
     bool rebinding = false;
+    // See ControllerAnalog struct
     ControllerAnalog left = { 0, 0 };
+    // See ControllerAnalog struct
     ControllerAnalog right = { 0, 0 };
+    // The trigger's value if pressed
     Sint16 left_trigger = 0;
+    // The triggers value if pressed
     Sint16 right_trigger = 0;
+    // The map of controller buttons to their associated actions.
     ControllerMap controller_map;
+    // Map of actions to whether or not is currently held
     ControllerPresses controller_held;
+    // Map of actions to whether or not is pressed exactly once
     ControllerPresses controller_pressed;
+    // Direct map signifiying whether a specific button is held
     DirectControllerMap direct_button_held;
+    // Direct map signifiying whether a specific button is pressed exactly once.
     DirectControllerMap direct_button_pressed;
     // Action being rebound
     Sint32 rebind_action = 0;
@@ -60,12 +69,20 @@ typedef std::vector<Controller> ControllerList;
 
 class Input {
     private:
-        bool rebind_finished = false;
+        // State of input handling. If rebinding is true, follow that branch.
         bool rebinding = false;
+        // The action being assigned.
         Sint32 rebind_action = 0;
+        // If any key should be replaced when mapping a new one, this is the one to be replaced.
         SDL_Keycode keyboard_key_to_replace = SDLK_UNKNOWN;
+        // If any button should be replaced when mapping a new one, this is the one to be replaced.
         Uint8 mouse_button_to_replace = SDLK_UNKNOWN;
+        // If any button should be replaced when mapping a new one, this is the one to be replaced.
         Uint8 controller_button_to_replace = SDL_CONTROLLER_BUTTON_INVALID;
+        // Disconnects and unassigns the controller, setting the matching controller index to inactive.
+        bool unassign_controller(int);
+        // Find next availabe controller slot. Goes through the Controller list and finds an inactive one.
+        int next_free_controller_slot();
     public:
         // The mouse position given as x and y coordinates.
         SDL_Point mouse_position{0, 0};
@@ -92,23 +109,38 @@ class Input {
         // Is set to true if SDLK_ESCAPE has been pressed exactly once.
         // Can also be found in 'direct_key_held' and 'direct_key_pressed'
         bool escape_pressed = false;
+        // Sets an action to be rebound. Second argument is the key to be replaced, if any.
         void start_rebind_keyboard_action(Sint32, SDL_Keycode);
+        // Sets an action to be rebound. Second argument is the button to be replaced, if any.
         void start_rebind_mouse_action(Sint32, Uint8);
+        // Sets an action to be rebound. Second argument is the button to be replaced, if any. Third is the controller where is should be rebound.
         void start_rebind_action_controller(Sint32, Sint32, Uint8);
-        bool unassign_controller(int);
-        int next_free_controller_slot();
-        KeyMap &key_map;
+        // A map of keyboard keys mapped to user actions
+        KeyMap key_map;
+        // A map of actions mapped to whether the actions is held down
         KeyPresses key_held;
+        // A map of actions mapped to whether the actions is pressed exactly once.
         KeyPresses key_pressed;
+        // A map of keyboard key mapped to whether or not it is held down
         DirectKeyMap direct_key_held;
+        // A map of keyboard key mapped to whether or not it is pressed exactly once
         DirectKeyMap direct_key_pressed;
+        // A map of mouse buttons mapped to whether or not it is held down
         DirectMouseMap direct_mouse_held;
+        // A map of mouse buttons mapped to whether or not it is pressed exactly once
         DirectMouseMap direct_mouse_pressed;
-        MouseMap &mouse_map;
+        // A map of mouse buttons mapped to user actions
+        MouseMap mouse_map;
+        // A map of actions mapped to whether the actions is held down
         MousePresses mouse_pressed;
+        // A map of actions mapped to whether the actions is pressed exactly once
         MousePresses mouse_held;
+
+        // The max allowed controllers attached at any point. 
         Uint8 max_controllers = 8;
-        std::vector<struct Controller> &controllers;
+        
+        // List of controllers. Content is filled lazily.
+        std::vector<struct Controller> controllers;
         
         /*
         Checks if action mapping is held down.
@@ -156,7 +188,17 @@ class Input {
         */
         bool is_controller_presssed(Uint8, Uint8);
 
-        Input(KeyMap&, MouseMap&, ControllerList&);
+        // Binds a keyboard key to an action
+        void bind_key_to_action(SDL_Keycode, Sint32);
+
+        // Binds a mouse button to an action
+        void bind_mouse_button_to_action(Uint8, Sint32);
+
+        // Binds a controller button to an action, for a specific controller
+        void bind_controller_button_to_action(Uint8, Sint32, Sint32);
+
+
+        Input();
         ~Input();
         void bind_key(SDL_Keycode);
         void bind_mouse_button(Uint8);

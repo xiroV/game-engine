@@ -59,32 +59,25 @@ int input_test() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderClear(renderer);
 
-    KeyMap key_map;
-    key_map[SDLK_LEFT] = MoveLeft;
-    key_map[SDLK_RETURN] = Attack;
-    key_map[SDLK_RIGHT] = MoveRight;
-    key_map[SDLK_SPACE] = Jump;
-    key_map[SDLK_LCTRL] = Attack;
-
     MouseMap mouse_map;
     mouse_map[SDL_BUTTON_LEFT] = Select;
 
     ControllerMap controller_map;
     controller_map[SDL_CONTROLLER_BUTTON_B] = Attack;
     controller_map[SDL_CONTROLLER_BUTTON_A] = Jump;
-    ControllerList list;
-    Controller c = {
-        false,
-        false,
-        {0, 0},
-        {0, 0},
-        0,
-        0,
-        controller_map
-    };
-    list.emplace_back(c);
+    
+    Input input;
 
-    Input input(key_map, mouse_map, list);
+    input.bind_key_to_action(SDLK_LEFT, MoveLeft);
+    input.bind_key_to_action(SDLK_LEFT, MoveLeft);
+    input.bind_key_to_action(SDLK_SPACE, Jump);
+    input.bind_key_to_action(SDLK_LCTRL, Attack);
+
+    input.bind_mouse_button_to_action(SDL_BUTTON_LEFT, Select);
+
+    input.bind_controller_button_to_action(SDL_CONTROLLER_BUTTON_A, Attack, 0);
+    input.bind_controller_button_to_action(SDL_CONTROLLER_BUTTON_B, Jump, 0);
+
     Engine engine(input);
 
     while (!engine.input.handle_input()) {

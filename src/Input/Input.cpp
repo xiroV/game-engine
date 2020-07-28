@@ -72,11 +72,17 @@ int Input::next_free_controller_slot() {
     return -1;
 }
 
-Input::Input(
-    KeyMap &key_map,
-    MouseMap &mouse_map,
-    ControllerList &controllers
-): key_map{ key_map }, mouse_map{ mouse_map }, controllers{ controllers } {}
+Input::Input() {
+    this->controllers.emplace_back(Controller{
+        false,
+        false,
+        {0, 0},
+        {0, 0},
+        0,
+        0,
+        std::map<Uint8, Sint32>()
+    });
+}
 
 
 int assign_controller(int which, int assign_slot) {
@@ -107,17 +113,17 @@ bool Input::unassign_controller(int which) {
 
 Input::~Input() {}
 
-//void Input::bind_key_to_action(SDL_Keycode key, Sint32 action) {
-//    // TODO
-//}
-//
-//void Input::bind_mouse_button_to_action(Uint8 button, Sint32 action) {
-//    // TODO
-//}
-//
-//void Input::bind_controller_button_to_action(Uint8 button, Sint32 action, Sint32 controller) {
-//    // TODO
-//}
+void Input::bind_key_to_action(SDL_Keycode key, Sint32 action) {
+    this->key_map[key] = action;
+}
+
+void Input::bind_mouse_button_to_action(Uint8 button, Sint32 action) {
+    this->mouse_map[button] = action;
+}
+
+void Input::bind_controller_button_to_action(Uint8 button, Sint32 action, Sint32 controller) {
+    this->controllers[controller].controller_map[button] = action;
+}
 
 void Input::bind_key(SDL_Keycode key) {
     this->key_map[key] = this->rebind_action;
