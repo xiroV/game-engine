@@ -4,6 +4,7 @@
 #include <string>
 #include "Input.hpp"
 #include "../Engine.h"
+#include "../Rendering/Rendering.hpp"
 
 struct TestState {
     bool jump_toggled = false;
@@ -21,11 +22,6 @@ enum UserAction {
 };
 
 constexpr auto MAX_KEYS_PER_ACTION = 2;
-#define WHITE SDL_Color{255, 255, 255, SDL_ALPHA_OPAQUE}
-#define BLACK SDL_Color{0, 0, 0, SDL_ALPHA_OPAQUE}
-#define BLUE SDL_Color{0, 0, 255, SDL_ALPHA_OPAQUE}
-#define RED SDL_Color{255, 0, 0, SDL_ALPHA_OPAQUE}
-#define GREEN SDL_Color{0, 255, 0, SDL_ALPHA_OPAQUE}
 
 std::string up_or_down(bool);
 std::string bool_string(bool);
