@@ -37,7 +37,7 @@ bool Rendering::load_default_font(std::string path, int ptsize) {
 
 	auto *loaded_font = TTF_OpenFont(path.c_str(), 32);
 	if (loaded_font == nullptr) {
-		SDL_Log("Failed to load font with path %s", path);
+		SDL_Log("Failed to load font with path %s", path.c_str());
 		return false;
 	}
 	this->default_font = loaded_font;
