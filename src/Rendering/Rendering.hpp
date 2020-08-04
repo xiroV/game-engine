@@ -17,19 +17,29 @@ class Rendering {
 
 	public:
 		std::map<Uint32, SDL_Texture*> textures;
+		/// <summary>
+		///	Constructor for Rendering class. Defaults to 1280x720 in resolution with resizing disallowed.
+		/// </summary>
+		/// <param name="width">Window width of window to render content</param>
+		/// <param name="height">Window height of window to render content</param>
+		/// <param name="resizable">Whether or not the window can be resized</param>
+		/// <returns></returns>
 		Rendering(int width = 1280, int height = 720, bool resizable = false);
+		double scale_x = 1;
+		double scale_y = 1;
 		~Rendering();
-		const bool has_default_font();
+		bool has_default_font();
 		bool load_default_font(std::string, int);
 		const SDL_Renderer* get_renderer();
 		const SDL_Window* get_window();
-		void render_text(std::string, SDL_Color, int, SDL_Point, TTF_Font* = nullptr);
-		inline void render_text(std::string, SDL_Color, int, int, int, TTF_Font* = nullptr);
+		void draw_line(int, int, int, int, SDL_Color);
+		void draw_rect(int x, int y, int width, int height, SDL_Color color, bool fill);
+		void draw_text(std::string, SDL_Color, int, int, int, TTF_Font* = nullptr);
 		int load_and_save_texture(std::string);
-		inline void draw_texture(SDL_Texture*, SDL_Rect* = nullptr, SDL_Rect* = nullptr);
+		inline void draw_texture(SDL_Texture*, SDL_Rect*, SDL_Rect*);
 		void draw_stored_texture(int, SDL_Rect*, SDL_Rect*);
 		SDL_Texture* get_texture(int);
 		void set_texture(int, SDL_Texture*);
 
-		void render();
+		void show();
 };

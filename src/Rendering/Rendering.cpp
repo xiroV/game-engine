@@ -14,7 +14,29 @@ Rendering::Rendering(int width, int height, bool resizable) {
 	this->renderer = renderer;
 }
 
-void Rendering::render() {
+void Rendering::draw_line(int start_x, int start_y, int to_x, int to_y, SDL_Color color) {
+	Uint8 r, g, b, a;
+	SDL_GetRenderDrawColor(this->renderer, &r, &g, &b, &a);
+	SDL_SetRenderDrawColor(this->renderer, color.r, color.g, color.b, color.a);
+	SDL_RenderDrawLine(this->renderer, start_x, start_y, to_x, to_y);
+	SDL_SetRenderDrawColor(this->renderer, r, g, b, a);
+
+}
+
+void Rendering::draw_rect(int x, int y, int width, int height, SDL_Color color, bool fill) {
+	Uint8 r, g, b, a;
+	SDL_GetRenderDrawColor(this->renderer, &r, &g, &b, &a);
+	SDL_SetRenderDrawColor(this->renderer, color.r, color.g, color.b, color.a);
+	SDL_Rect rect = SDL_Rect{x, y, width, height};
+	if (fill) {
+		SDL_RenderFillRect(this->renderer, &rect);
+	} else {
+		SDL_RenderDrawRect(this->renderer, &rect);
+	}
+	SDL_SetRenderDrawColor(this->renderer, r, g, b, a);
+}
+
+void Rendering::show() {
 	SDL_RenderPresent(renderer);
 	SDL_RenderClear(renderer);
 }
@@ -52,15 +74,11 @@ const SDL_Window* Rendering::get_window() {
 	return this->window;
 }
 
-const bool Rendering::has_default_font() {
+bool Rendering::has_default_font() {
 	return this->default_font == nullptr;
 }
 
-void Rendering::render_text(std::string text, SDL_Color color, int font_size, SDL_Point point, TTF_Font *font) {
-	this->render_text(text, color, font_size, point.x, point.y, font);
-};
-
-inline void Rendering::render_text(std::string text, SDL_Color color, int font_size, int x, int y, TTF_Font *font) {
+void Rendering::draw_text(std::string text, SDL_Color color, int font_size, int x, int y, TTF_Font *font) {
 	TTF_Font *font_to_use = font != nullptr ? font : this->default_font;
 	auto f1 = font;
 	auto f2 = this->default_font;
@@ -76,9 +94,9 @@ inline void Rendering::draw_texture(SDL_Texture *texture, SDL_Rect *src, SDL_Rec
 	SDL_RenderCopy(this->renderer, texture, src, dest);
 }
 
-void Rendering::draw_stored_texture(int key, SDL_Rect* src, SDL_Rect* dest) {
+void Rendering::draw_stored_texture(int key, SDL_Rect *texture_section, SDL_Rect* position) {
 	auto* texture = this->get_texture(key);
-	this->draw_texture(texture, src, dest);
+	this->draw_texture(texture, texture_section, position);
 }
 
 

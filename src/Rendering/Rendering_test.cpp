@@ -11,8 +11,12 @@ void rendering_test() {
 
 	while (!input.handle_input()) {
 		//Render texture to screen
-		rendering.draw_stored_texture(schulz_texture_key, nullptr, nullptr);
-		rendering.render_text("Hello", WHITE, 24, SDL_Point{(1280 / 2), 720 / 2});
-		rendering.render();
+		SDL_Rect r = SDL_Rect{ 200, 200, 200, 200 };
+		rendering.draw_stored_texture(schulz_texture_key, &r, nullptr);
+		rendering.draw_text("Hello", WHITE, 24, 1280 / 2, 720 / 2);
+		rendering.draw_line(1280 / 2, 0, 1280 / 2, 720, WHITE);
+		rendering.draw_line(0, 720 / 2, 1280, 720 / 2, WHITE);
+		rendering.draw_rect(1280 / 2 - 60, 720 / 2 - 60, 120, 120, WHITE, false);
+		rendering.show();
 	}
 }
