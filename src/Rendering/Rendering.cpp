@@ -94,11 +94,24 @@ inline void Rendering::draw_texture(SDL_Texture *texture, SDL_Rect *src, SDL_Rec
 	SDL_RenderCopy(this->renderer, texture, src, dest);
 }
 
-void Rendering::draw_stored_texture(int key, SDL_Rect *texture_section, SDL_Rect* position) {
-	auto* texture = this->get_texture(key);
-	this->draw_texture(texture, texture_section, position);
+inline void Rendering::draw_texture_rotated(SDL_Texture *texture, SDL_Rect *position, SDL_Rect *quad_section, double angle, SDL_Point *center, SDL_RendererFlip flip) {
+	SDL_RenderCopyEx(this->renderer, texture, quad_section, position, angle, center, flip);
 }
 
+void Rendering::draw_stored_texture(int key, SDL_Rect *position, SDL_Rect *quad_section) {
+	auto *texture = this->get_texture(key);
+	this->draw_texture(texture, quad_section, position);
+}
+
+void Rendering::draw_stored_texture(int key, SDL_Rect *position) {
+	auto *texture = this->get_texture(key);
+	this->draw_texture(texture, nullptr, position);
+}
+
+void Rendering::draw_stored_texture_rotated(int key, SDL_Rect* position, SDL_Rect* quad_section, double angle, SDL_Point* center, SDL_RendererFlip flip) {
+	auto* texture = this->get_texture(key);
+	this->draw_texture_rotated(texture, position, quad_section, angle, center, flip);
+}
 
 SDL_Texture* Rendering::get_texture(int key) {
 	return this->textures[key];
@@ -106,6 +119,23 @@ SDL_Texture* Rendering::get_texture(int key) {
 
 void Rendering::set_texture(int key, SDL_Texture *texture) {
 	this->textures[key] = texture;
+}
+
+void Rendering::setRGBA(Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+	SDL_SetRenderDrawColor(this->renderer, r, g, b, a);
+}
+
+void Rendering::getRGBA(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a) {
+	SDL_GetRenderDrawColor(this->renderer, r, g, b, a);
+}
+
+void Rendering::set_texture_alpha(SDL_Texture *texture, Uint8 alpha) {
+	SDL_SetTextureAlphaMod(texture, alpha);
+}
+
+void Rendering::set_texture_alpha(int key, Uint8 alpha) {
+	auto *texture = this->textures[key];
+	SDL_SetTextureAlphaMod(texture, alpha);
 }
 
 int Rendering::load_and_save_texture(std::string path) {

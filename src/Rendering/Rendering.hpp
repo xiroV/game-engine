@@ -37,9 +37,28 @@ class Rendering {
 		void draw_text(std::string, SDL_Color, int, int, int, TTF_Font* = nullptr);
 		int load_and_save_texture(std::string);
 		inline void draw_texture(SDL_Texture*, SDL_Rect*, SDL_Rect*);
-		void draw_stored_texture(int, SDL_Rect*, SDL_Rect*);
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="position"></param>
+		/// <param name="quad_section"></param>
+		void draw_stored_texture(int key, SDL_Rect *position, SDL_Rect *quad_section);
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="key"></param>
+		/// <param name="position"></param>
+		void draw_stored_texture(int key, SDL_Rect *position);
 		SDL_Texture* get_texture(int);
+		inline void draw_texture_rotated(SDL_Texture* texture, SDL_Rect* position, SDL_Rect* quad_section, double angle, SDL_Point* center, SDL_RendererFlip flip);
+		void draw_stored_texture_rotated(int key, SDL_Rect* position, SDL_Rect* quad_section, double angle, SDL_Point* center, SDL_RendererFlip flip);
 		void set_texture(int, SDL_Texture*);
+		void set_texture_alpha(int key, Uint8 alpha);
+		void set_texture_alpha(SDL_Texture* texture, Uint8 alpha);
+
+		void setRGBA(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
+		void getRGBA(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);
 
 		void show();
 };
