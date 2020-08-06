@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <string>
 #include <map>
+#include "../Animation2D/Animation2D.hpp"
 
 #define WHITE SDL_Color{255, 255, 255, SDL_ALPHA_OPAQUE}
 #define BLACK SDL_Color{0, 0, 0, SDL_ALPHA_OPAQUE}
@@ -37,6 +38,8 @@ class Rendering {
 		void draw_text(std::string, SDL_Color, int, int, int, TTF_Font* = nullptr);
 		int load_and_save_texture(std::string);
 		inline void draw_texture(SDL_Texture*, SDL_Rect*, SDL_Rect*);
+		void draw_animation(Animation* anim, int x, int y, int w, int h);
+		void draw_animation(Animation* anim, int x, int y);
 		/// <summary>
 		/// 
 		/// </summary>

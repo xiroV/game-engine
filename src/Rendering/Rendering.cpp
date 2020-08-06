@@ -152,3 +152,20 @@ int Rendering::load_and_save_texture(std::string path) {
 	SDL_FreeSurface(surface);
 	return i;
 }
+
+
+void Rendering::draw_animation(Animation* anim, int x, int y, int w, int h) {
+	int a_x, a_y, a_w, a_h;
+	anim->get_frame(&a_x, &a_y, &a_w, &a_h);
+	SDL_Rect animation_quad = { a_x, a_y, a_w, a_h };
+	SDL_Rect location = {x, y, w, h };
+	this->draw_texture(anim->get_texture(), &animation_quad, &location);
+}
+
+void Rendering::draw_animation(Animation* anim, int x, int y) {
+	int a_x, a_y, a_w, a_h;
+	anim->get_frame(&a_x, &a_y, &a_w, &a_h);
+	SDL_Rect animation_quad = {a_x, a_y, a_w, a_h};
+	SDL_Rect location = { x, y, a_w, a_h };
+	this->draw_texture(anim->get_texture(), &animation_quad, &location);
+}

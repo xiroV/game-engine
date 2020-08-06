@@ -18,7 +18,12 @@ void rendering_test() {
 	Input input;
 
 	rendering.load_default_font("./assets/Font/PressStart2P.ttf", 32);
+	int farmer_key = rendering.load_and_save_texture("./assets/Images/farmer.png");
 	int schulz_texture_key = rendering.load_and_save_texture("./assets/Images/schulz.png");
+	SDL_Texture *farmer = rendering.get_texture(farmer_key);
+
+	AnimationReference anim_ref(farmer, 39, 64, 4, true, true);
+	Animation anim(&anim_ref, 200);
 
 	double angle = 0;
 	bool ascending = false;
@@ -52,6 +57,7 @@ void rendering_test() {
 		rendering.draw_line(1280 / 2, 0, 1280 / 2, 720, WHITE);
 		rendering.draw_line(0, 720 / 2, 1280, 720 / 2, WHITE);
 		rendering.draw_rect(1280 / 2 - 60, 720 / 2 - 60, 120, 120, WHITE, false);
+		rendering.draw_animation(&anim, 400, 100);
 		rendering.show();
 
 		if (ascending) {
@@ -61,5 +67,7 @@ void rendering_test() {
 		}
 
 		if (abs(angle) > 30) ascending = !ascending;
+
+		anim.update(delta);
 	}
 }
