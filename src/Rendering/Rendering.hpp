@@ -26,9 +26,9 @@ class Rendering {
 		/// <param name="resizable">Whether or not the window can be resized</param>
 		/// <returns></returns>
 		Rendering(int width = 1280, int height = 720, bool resizable = false);
+		~Rendering();
 		double scale_x = 1;
 		double scale_y = 1;
-		~Rendering();
 		bool has_default_font();
 		bool load_default_font(std::string, int);
 		const SDL_Renderer* get_renderer();
@@ -59,6 +59,9 @@ class Rendering {
 		void set_texture(int, SDL_Texture*);
 		void set_texture_alpha(int key, Uint8 alpha);
 		void set_texture_alpha(SDL_Texture* texture, Uint8 alpha);
+
+		void draw_animation_rotated(Animation *anim, int x, int y, double angle, SDL_Point *center, SDL_RendererFlip flip);
+		void draw_animation_rotated(Animation* anim, int x, int y, int w, int h, double angle, SDL_Point* center, SDL_RendererFlip flip);
 
 		void setRGBA(Uint8 r, Uint8 g, Uint8 b, Uint8 a);
 		void getRGBA(Uint8 *r, Uint8 *g, Uint8 *b, Uint8 *a);

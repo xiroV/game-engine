@@ -58,15 +58,16 @@ void rendering_test() {
 		rendering.draw_line(0, 720 / 2, 1280, 720 / 2, WHITE);
 		rendering.draw_rect(1280 / 2 - 60, 720 / 2 - 60, 120, 120, WHITE, false);
 		rendering.draw_animation(&anim, 400, 100);
+		rendering.draw_animation_rotated(&anim, 459, 100, angle, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 		rendering.show();
 
 		if (ascending) {
 			angle += (delta / 20);
+			if (angle > 30) ascending = !ascending;
 		} else {
 			angle -= (delta / 20);
+			if (angle < -30) ascending = !ascending;
 		}
-
-		if (abs(angle) > 30) ascending = !ascending;
 
 		anim.update(delta);
 	}
