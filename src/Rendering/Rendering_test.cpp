@@ -4,13 +4,11 @@
 #include <math.h>
 
 int max(int a, int b) {
-	if (a > b) return a;
-	return b;
+	return a > b ? a : b;
 }
 
 int min(int a, int b) {
-	if (a < b) return a;
-	return b;
+	return a < b ? a : b;
 }
 
 void rendering_test() {
@@ -20,6 +18,8 @@ void rendering_test() {
 	rendering.load_default_font("./assets/Font/PressStart2P.ttf", 32);
 	int farmer_key = rendering.load_and_save_texture("./assets/Images/farmer.png");
 	int schulz_texture_key = rendering.load_and_save_texture("./assets/Images/schulz.png");
+    int windmill_base_key = rendering.load_and_save_texture("./assets/Images/windmill_base.png");
+    int windmill_blades_key = rendering.load_and_save_texture("./assets/Images/windmill_blades.png");
 	SDL_Texture *farmer = rendering.get_texture(farmer_key);
 
 	AnimationReference anim_ref(farmer, 39, 64, 4, true, true);
@@ -59,6 +59,12 @@ void rendering_test() {
 		rendering.draw_rect(1280 / 2 - 60, 720 / 2 - 60, 120, 120, WHITE, false);
 		rendering.draw_animation(&anim, 400, 100);
 		rendering.draw_animation_rotated(&anim, 459, 100, angle, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+        
+        SDL_Rect windmill_base{500, 100, 224 / 2, 463 / 2};
+        SDL_Rect windmill_blades{0, 0, 0, 0};
+        rendering.draw_stored_texture(windmill_base_key, &windmill_base, nullptr);
+        rendering.draw_stored_texture_rotated(windmill_blades_key, &windmill_blades, nullptr, 0, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
+
 		rendering.show();
 
 		if (ascending) {
