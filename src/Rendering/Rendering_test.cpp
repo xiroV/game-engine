@@ -1,6 +1,7 @@
 #include "Rendering.hpp"
 #include "../Input/Input.hpp"
 #include <map>
+#include <iostream>
 #include <math.h>
 
 int max(int a, int b) {
@@ -32,6 +33,12 @@ void rendering_test() {
 	double delta = 0;
 	int x = 0;
 	int y = 0;
+    SDL_Point windmill_center{180 / 2, 186 / 2};           
+    SDL_Rect windmill_base{500, 100, 224 / 2, 463 / 2};
+    SDL_Rect windmill_blades{514, 22, 338 / 2, 380 / 2};
+    SDL_Rect r = SDL_Rect{ 200, 200, 200, 200 };
+    SDL_Rect r2 = SDL_Rect{ 800, 200, 200, 200 };
+    double windmill_rotation = 0.f;
 
 	while (!input.handle_input()) {
 
@@ -45,12 +52,11 @@ void rendering_test() {
 		double b = abs(y - 300);
 		double c = sqrt(a * a + b * b);
 
-		SDL_Rect r = SDL_Rect{ 200, 200, 200, 200 };
+		
 		rendering.draw_text("No touching", WHITE, 12, r.x + 20, r.y + 100);
 		rendering.set_texture_alpha(schulz_texture_key, c < 141 ? 0 : 0 + max(0, min(255, c)));
 		rendering.draw_stored_texture(schulz_texture_key, &r);
 		rendering.set_texture_alpha(schulz_texture_key, 255);
-		SDL_Rect r2 = SDL_Rect{ 800, 200, 200, 200 };
 
 		rendering.draw_stored_texture_rotated(schulz_texture_key, &r2, nullptr, angle, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 		rendering.draw_text("Hello", WHITE, 24, 1280 / 2, 720 / 2);
@@ -59,12 +65,9 @@ void rendering_test() {
 		rendering.draw_rect(1280 / 2 - 60, 720 / 2 - 60, 120, 120, WHITE, false);
 		rendering.draw_animation(&anim, 400, 100);
 		rendering.draw_animation_rotated(&anim, 459, 100, angle, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
-        
-        SDL_Rect windmill_base{500, 100, 224 / 2, 463 / 2};
-        SDL_Rect windmill_blades{0, 0, 0, 0};
-        rendering.draw_stored_texture(windmill_base_key, &windmill_base, nullptr);
-        rendering.draw_stored_texture_rotated(windmill_blades_key, &windmill_blades, nullptr, 0, nullptr, SDL_RendererFlip::SDL_FLIP_NONE);
 
+        rendering.draw_stored_texture(windmill_base_key, &windmill_base, nullptr);
+        rendering.draw_stored_texture_rotated(windmill_blades_key, &windmill_blades, nullptr, windmill_rotation, &windmill_center, SDL_RendererFlip::SDL_FLIP_NONE);
 		rendering.show();
 
 		if (ascending) {
@@ -74,6 +77,11 @@ void rendering_test() {
 			angle -= (delta / 20);
 			if (angle < -30) ascending = !ascending;
 		}
+
+        windmill_rotation += (delta / 10);
+        if (windmill_rotation > 360.f) {
+            windmill_rotation -= 360;
+        }
 
 		anim.update(delta);
 	}
