@@ -18,6 +18,8 @@ class Rendering {
 
 	public:
 		std::map<Uint32, SDL_Texture*> textures;
+		std::map<Uint32, SDL_Texture*> texts;
+
 		/// <summary>
 		///	Constructor for Rendering class. Defaults to 1280x720 in resolution with resizing disallowed.
 		/// </summary>
@@ -53,7 +55,12 @@ class Rendering {
 		/// <param name="key"></param>
 		/// <param name="position"></param>
 		void draw_stored_texture(int key, SDL_Rect *position);
-		SDL_Texture* get_texture(int);
+		int store_text_as_texture(std::string text, TTF_Font *font, SDL_Color color);
+		void draw_stored_text(int key, int x, int y, int font_size, int string_length);
+		SDL_Texture* get_stored_text(int key);
+		void set_text(int key, SDL_Texture *texture);
+
+		SDL_Texture* get_texture(int key);
 		inline void draw_texture_rotated(SDL_Texture* texture, SDL_Rect* position, SDL_Rect* quad_section, double angle, SDL_Point* center, SDL_RendererFlip flip);
 		void draw_stored_texture_rotated(int key, SDL_Rect* position, SDL_Rect* quad_section, double angle, SDL_Point* center, SDL_RendererFlip flip);
 		void set_texture(int, SDL_Texture*);

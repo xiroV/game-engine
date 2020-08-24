@@ -80,8 +80,6 @@ bool Rendering::has_default_font() {
 
 void Rendering::draw_text(std::string text, SDL_Color color, int font_size, int x, int y, TTF_Font *font) {
 	TTF_Font *font_to_use = font != nullptr ? font : this->default_font;
-	auto f1 = font;
-	auto f2 = this->default_font;
 	SDL_Surface* textSurface = TTF_RenderText_Solid(font_to_use, text.c_str(), color);
 	SDL_Texture* texture = SDL_CreateTextureFromSurface(this->renderer, textSurface);
 	SDL_Rect position = { x, y, (int)floor(font_size * text.length()), font_size };
@@ -89,6 +87,30 @@ void Rendering::draw_text(std::string text, SDL_Color color, int font_size, int 
 	SDL_DestroyTexture(texture);
 	SDL_FreeSurface(textSurface);
 }
+
+int Rendering::store_text_as_texture(std::string text, TTF_Font *font, SDL_Color color) {
+	TTF_Font* font_to_use = font != nullptr ? font : this->default_font;
+	SDL_Surface* textSurface = TTF_RenderText_Solid(font_to_use, text.c_str(), color);
+	SDL_Texture* texture = SDL_CreateTextureFromSurface(this->renderer, textSurface);
+	int i = -1;
+	while (this->texts[++i] != nullptr);
+	this->texts[i] = texture;
+	return i;
+}
+
+void Rendering::draw_stored_text(int key, int x, int y, int font_size, int string_length) {
+	SDL_Rect position = { x, y, font_size * string_length, font_size };
+	SDL_RenderCopy(this->renderer, this->texts[key], NULL, &position);
+}
+
+SDL_Texture* Rendering::get_stored_text(int key) {
+	return this->texts[key];
+}
+
+void Rendering::set_text(int key, SDL_Texture* texture) {
+	this->texts[key] = texture;
+}
+
 
 inline void Rendering::draw_texture(SDL_Texture *texture, SDL_Rect *src, SDL_Rect *dest) {
 	SDL_RenderCopy(this->renderer, texture, src, dest);
