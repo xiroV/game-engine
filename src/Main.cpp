@@ -5,13 +5,14 @@
 
 #include "Input/Input.hpp"
 #include "Input/Input_test.hpp"
+#include "Rendering/Rendering_test.hpp"
 #include "Engine.h"
 
 #if WITH_TESTS
 
 int main(int argc, char* argv[]) {
-    bool any_test = false;
     input_test();
+    rendering_test();
     return 0;
 }
 
