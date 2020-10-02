@@ -39,6 +39,8 @@ int main(int argc, char* argv[]) {
         false,
         {0, 0},
         {0, 0},
+        0,
+        0,
         controller_map
     };
     list.emplace_back(c);
