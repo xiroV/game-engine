@@ -4,8 +4,6 @@ project("game-engine")
 
 set(CMAKE_CXX_STANDARD 17)
 
-# This is used to make findSDL2_* available to this script
-set(CMAKE_MODULE_PATH  ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/sdl2")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # Clang or gcc flags goes here
@@ -51,39 +49,24 @@ set(EXECUTABLE_NAME
     ${CMAKE_PROJECT_NAME}
 )
 
+set(TEST_EXECUTABLE_NAME
+    "test-${CMAKE_PROJECT_NAME}"
+)
+
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${INCLUDE_DIRS})
 
-if(WIN32)
-    # On windows we use the included SDL2 libraries
-    add_subdirectory(libs/SDL2_packed)
+add_executable(${TEST_EXECUTABLE_NAME} ${TEST_SOURCES} ${SOURCES})
+target_include_directories(${TEST_EXECUTABLE_NAME} PRIVATE ${INCLUDE_DIRS})
 
-    target_link_directories(${EXECUTABLE_NAME} PRIVATE ${SDL2_PACKED_LINK_DIRS})
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${SDL2_PACKED_LINK_LIBS})
-    target_include_directories(${EXECUTABLE_NAME} PRIVATE ${SDL2_PACKED_INCLUDE_DIRS})
-
-    # This copies over the dll's to the executable dir so we can run it on windows
-    add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory ${SDL2_PACKED_DLL_DIRS} $<TARGET_FILE_DIR:${EXECUTABLE_NAME}>)
-
-else(WIN32)
-
-    # on ubuntu we use the cmake modules to find the libraries and the header include dirs
-
-    find_package(SDL2 REQUIRED)
-    target_include_directories(${EXECUTABLE_NAME} PRIVATE ${SDL2_INCLUDE_DIRS})
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${SDL2_LIBRARIES})
-
-    find_package(SDL2_image REQUIRED)
-    target_include_directories(${EXECUTABLE_NAME} PRIVATE ${SDL2_IMAGE_INCLUDE_DIRS})
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${SDL2_IMAGE_LIBRARIES})
-
-    find_package(SDL2_ttf REQUIRED)
-    target_include_directories(${EXECUTABLE_NAME} PRIVATE ${SDL2_TTF_INCLUDE_DIRS})
-    target_link_libraries(${EXECUTABLE_NAME} PRIVATE ${SDL2_TTF_LIBRARIES})
-
-endif(WIN32)
+add_subdirectory(libs/SDL2_packed)
+add_sdl2_libs(${EXECUTABLE_NAME})
+add_sdl2_libs(${TEST_EXECUTABLE_NAME})
 
 # Assets copy
 add_custom_command(TARGET ${EXECUTABLE_NAME} POST_BUILD
 COMMAND ${CMAKE_COMMAND} -E copy_directory ${ASSET_DIR} "$<TARGET_FILE_DIR:${EXECUTABLE_NAME}>/assets")
+
+# Assets copy test
+add_custom_command(TARGET ${TEST_EXECUTABLE_NAME} POST_BUILD
+COMMAND ${CMAKE_COMMAND} -E copy_directory ${ASSET_DIR} "$<TARGET_FILE_DIR:${TEST_EXECUTABLE_NAME}>/assets")
