@@ -37,7 +37,6 @@ set(SDL2_PACKED_LINK_LIBS
     ${SDL2_MAIN_LINK_LIB}
     SDL2_image
     SDL2_ttf
-    SDL2_gfx
     PARENT_SCOPE
 )
 
