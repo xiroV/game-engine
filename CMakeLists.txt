@@ -46,19 +46,22 @@ set(ASSET_DIR
 )
 
 set(EXECUTABLE_NAME
-    ${CMAKE_PROJECT_NAME}
+    "engine"
 )
 
 set(TEST_EXECUTABLE_NAME
-    "test-${CMAKE_PROJECT_NAME}"
+    "engine-test"
 )
 
+# creating executable
 add_executable(${EXECUTABLE_NAME} ${SOURCES})
 target_include_directories(${EXECUTABLE_NAME} PRIVATE ${INCLUDE_DIRS})
 
+# creating test executable
 add_executable(${TEST_EXECUTABLE_NAME} ${TEST_SOURCES} ${SOURCES})
 target_include_directories(${TEST_EXECUTABLE_NAME} PRIVATE ${INCLUDE_DIRS})
 
+# setting up SDL2 libraries and headers for targets
 add_subdirectory(libs/SDL2_packed)
 add_sdl2_libs(${EXECUTABLE_NAME})
 add_sdl2_libs(${TEST_EXECUTABLE_NAME})
