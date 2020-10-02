@@ -50,7 +50,14 @@ int MAIN_NAME(int argc, char* argv[]) {
         controller_map
     };
     list.emplace_back(c);
-    Input input(key_map, mouse_map, list);
+    //Input input(key_map, mouse_map, list);
+    Input input;
+    input.controllers = list;
+    input.key_map = key_map;
+    input.mouse_map = mouse_map;
+
+    Sint16 Jump = 0;
+
     Engine engine(input);
     engine.input.start_rebind_keyboard_action(Jump, SDLK_UNKNOWN);
     bool running = true;
