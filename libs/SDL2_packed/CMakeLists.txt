@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.13)
 
 project(SDL2_packed)
 
-# This is used to make findSDL2_* available to this script
-set(CMAKE_MODULE_PATH  ${CMAKE_MODULE_PATH} "${PROJECT_SOURCE_DIR}/cmake/sdl2")
 
 set(PREFIX ${CMAKE_CURRENT_SOURCE_DIR})
+
+set(SDL2_MODULE_FIND_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/sdl2 PARENT_SCOPE)
 
 set(SDL2_PLATFORM_TARGET x86_64-w64-mingw32)
 

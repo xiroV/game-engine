@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.13)
 
 project("game-engine")
 
@@ -63,6 +63,9 @@ target_include_directories(${TEST_EXECUTABLE_NAME} PRIVATE ${INCLUDE_DIRS})
 
 # setting up SDL2 libraries and headers for targets
 add_subdirectory(libs/SDL2_packed)
+
+list(APPEND CMAKE_MODULE_PATH ${SDL2_MODULE_FIND_PATH})
+
 add_sdl2_libs(${EXECUTABLE_NAME})
 add_sdl2_libs(${TEST_EXECUTABLE_NAME})
 
