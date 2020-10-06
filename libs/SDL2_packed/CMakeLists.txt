@@ -37,20 +37,6 @@ set(SDL2_PACKED_MINGW_DLL_DIRS
     PARENT_SCOPE
 )
 
-set(SDL2_PACKED_VC_LINK_LIBS
-     ${PREFIX}/${SDL2_MAIN_LIB}/vc/lib/${SDL2_VC_PLATFORM_TARGET}/SDL2.lib
-     ${PREFIX}/${SDL2_MAIN_LIB}/vc/lib/${SDL2_VC_PLATFORM_TARGET}/SDL2main.lib
-     ${PREFIX}/${SDL2_TTF_LIB}/vc/lib/${SDL2_VC_PLATFORM_TARGET}/SDL2_ttf.lib
-     ${PREFIX}/${SDL2_IMAGE_LIB}/vc/lib/${SDL2_VC_PLATFORM_TARGET}/SDL2_image.lib
-     PARENT_SCOPE
-)
-
-set(SDL2_PACKED_VC_INCLUDE_DIRS
-    ${PREFIX}/SDL2-2.0.12/vc/include
-    ${PREFIX}/SDL2_ttf-2.0.15/vc/include
-    PARENT_SCOPE
-)
-
 function(add_sdl2_libs TARGET_NAME)
     if(WIN32)
         if (MINGW)
