@@ -8,9 +8,15 @@
 #include "Rendering/Rendering_test.hpp"
 #include "Engine.h"
 
+#if defined(_WIN32)
+#define MAIN_NAME WinMain
+#else
+#define MAIN_NAME main
+#endif
+
 #if WITH_TESTS
 
-int main(int argc, char* argv[]) {
+int MAIN_NAME(int argc, char* argv[]) {
     input_test();
     rendering_test();
     return 0;
@@ -18,7 +24,7 @@ int main(int argc, char* argv[]) {
 
 #else 
 
-int main(int argc, char* argv[]) {
+int MAIN_NAME(int argc, char* argv[]) {
     if (TTF_Init() < 0) {
         std::cout << "Failed to initialize TTF" << std::endl;
     }   
@@ -39,10 +45,19 @@ int main(int argc, char* argv[]) {
         false,
         {0, 0},
         {0, 0},
+        0,
+        0,
         controller_map
     };
     list.emplace_back(c);
-    Input input(key_map, mouse_map, list);
+    //Input input(key_map, mouse_map, list);
+    Input input;
+    input.controllers = list;
+    input.key_map = key_map;
+    input.mouse_map = mouse_map;
+
+    Sint16 Jump = 0;
+
     Engine engine(input);
     engine.input.start_rebind_keyboard_action(Jump, SDLK_UNKNOWN);
     bool running = true;

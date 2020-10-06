@@ -3,6 +3,7 @@
 #include <SDL2/SDL_image.h>
 #include <string>
 #include <map>
+#include <cmath>
 #include "../Animation2D/Animation2D.hpp"
 
 #define WHITE SDL_Color{255, 255, 255, SDL_ALPHA_OPAQUE}

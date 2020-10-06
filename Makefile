@@ -1,11 +1,27 @@
-CXXFLAGS=-std=c++17 -Wall -Wpedantic -Wextra
-LIBS=-lSDLmain -lSDL2 -lSDL2_ttf -lSDL2_image
-SRC_FILES=src/Input/Input.cpp src/Main.cpp src/Engine.cpp src/Rendering/Rendering.cpp src/Animation2D/Animation2D.cpp
-TEST_FILES=src/Input/Input_test.cpp src/Rendering/Rendering_test.cpp
-TEST_FLAG=WITH_TESTS
+ROOTDIR=$(shell pwd)
+MODE=Release
+BUILD_DIR=build_${MODE}
 
-build:
-	g++ $(SRC_FILES) $(CXXFLAGS) $(LIBS) -D$(TEST_FLAG)=false -o engine
+release:
+	${MAKE} MODE=Release _build
 
-tests:
-	g++ $(SRC_FILES) $(TEST_FILES) $(CXXFLAGS) $(LIBS) -D$(TEST_FLAG)=true -o engine-test
+debug:
+	${MAKE} MODE=Debug _build
+
+test:
+	${MAKE} MODE=Debug _build_test
+
+clean:
+	${RM} -r -f build_*
+
+_build_test: _prepare_build
+	cmake --build ${ROOTDIR}/${BUILD_DIR} -- engine-test
+
+_build: _prepare_build
+	cmake --build ${ROOTDIR}/${BUILD_DIR} -- engine
+
+_prepare_build:
+	mkdir -p ${ROOTDIR}/${BUILD_DIR}
+	cd ${ROOTDIR}/${BUILD_DIR} && cmake -DCMAKE_BUILD_TYPE=${MODE} ..
+
+
