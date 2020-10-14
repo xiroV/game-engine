@@ -1,7 +1,8 @@
 #include "Rendering.hpp"
 
 Rendering::Rendering(int width, int height, bool resizable) {
-	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | (resizable ? SDL_WINDOW_RESIZABLE : 0));
+	// This should be moved to engine itself, I think?
+	SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_INIT_AUDIO | (resizable ? SDL_WINDOW_RESIZABLE : 0));
 	TTF_Init();
 	IMG_Init(IMG_INIT_PNG);
 	SDL_Window *window;
