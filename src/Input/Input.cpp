@@ -4,6 +4,11 @@
 #include <map>
 #include "Input.hpp"
 
+#if LINUX
+SDL_Joystick* SDL_JoystickFromPlayerIndex(int joystick) { return 0; }
+void SDL_GameControllerSetPlayerIndex(SDL_GameController* controller, int joystick) {}
+#endif
+
 bool Input::is_held(Sint32 a, bool with_controller, Sint32 controller) {
     const bool controller_down = with_controller ? this->controllers[controller].controller_held[a] : false;
     return controller_down || this->mouse_held[a] || this->key_held[a];
