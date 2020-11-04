@@ -7,12 +7,14 @@
 #include "Input/Input_test.hpp"
 #include "Rendering/Rendering_test.hpp"
 #include "Engine.h"
+#include "Audio/Audio_test.hpp"
 
 #if WITH_TESTS
 
 int main(int argc, char* argv[]) {
-    input_test();
-    rendering_test();
+    // input_test();
+    // rendering_test();
+    audio_test();
     return 0;
 }
 
