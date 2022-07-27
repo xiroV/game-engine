@@ -17,3 +17,6 @@ x64/**
 RCa14488
 RCb14488
 resource.h
+SDL2-2.0*
+out/
+SDL2/
