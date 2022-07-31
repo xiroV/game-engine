@@ -2,7 +2,7 @@
 #include <map>
 #include <iostream>
 #include <vector>
-#include <SDL2/SDL.h>
+#include <SDL.h>
 
 enum InputState {
     Listening,

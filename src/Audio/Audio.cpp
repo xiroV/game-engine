@@ -20,7 +20,7 @@ bool AudioManager::pause_music() {
 }
 bool AudioManager::stop_music() {
     Mix_HaltMusic();
-    return !this->is_music_playing();
+    return this->is_music_playing();
 }
 
 bool AudioManager::is_music_paused() {
