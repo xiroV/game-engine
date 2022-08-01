@@ -19,9 +19,6 @@ when WITH_TESTS {
 } else {
 
 main :: proc() {
-
-    if ttf.Init() < 0 do fmt.println("Failed to initialize TTF", sdl.GetError())   
-    
     sdl.Init(sdl.INIT_VIDEO);
     window: ^sdl.Window;
     renderer: ^sdl.Renderer;

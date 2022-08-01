@@ -1,1 +1,0 @@
-void rendering_test();

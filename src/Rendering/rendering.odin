@@ -3,6 +3,7 @@ package rendering
 import anim "animation2D"
 import sdl "vendor:sdl"
 import ttf "vendor:sdl/ttf"
+import img "vendor:sdl/img"
 
 WHITE :: sdl.Color{255, 255, 255, sdl.ALPHA_OPAQUE}
 BLACK :: sdl.Color{0, 0, 0, sdl.ALPHA_OPAQUE}
@@ -11,20 +12,20 @@ RED :: sdl.Color{255, 0, 0, sdl.ALPHA_OPAQUE}
 GREEN :: sdl.Color{0, 255, 0, sdl.ALPHA_OPAQUE}
 
 Rendering :: struct {
-	window: ^sdl.Window = nil;
-	renderer: ^sdl.Renderer = nil;
-	default_font: ^TTF_Font = nil;
-	textures: [dynamic]^sdl.Texture
-	texts: [dynamic]^sdl.Texture
-	scale_x: f64 = 1.0
-	scale_y: f64 = 1.0
+	window: ^sdl.Window,
+	renderer: ^sdl.Renderer,
+	default_font: ^TTF_Font,
+	textures: [dynamic]^sdl.Texture,
+	texts: [dynamic]^sdl.Texture,
+	scale_x: f64,
+	scale_y: f64,
 }
 
-init :: proc(width: int  = 1280, height: int  = 720, resizable: bool = true) -> {
+init :: proc(width: int  = 1280, height: int  = 720, resizable: bool = true) -> ^Rendering {
 	rendering := new(Rendering)
 	sdl.Init(sdl.INIT_VIDEO | sdl.INIT_GAMECONTROLLER | sdl.INIT_JOYSTICK | sdl.INIT_AUDIO | (resizable ? sdl.WINDOW_RESIZABLE : 0));
 	ttf.Init();
-	IMG_Init(IMG_INIT_PNG);
+	img.Init(img.INIT_PNG);
 	sdl.Window *window;
 	sdl.Renderer *renderer;
 	sdl.CreateWindowAndRenderer(width, height, sdl.WINDOW_ALLOW_HIGHDPI, &window, &renderer);
@@ -57,7 +58,7 @@ load_default_font :: proc(rendering: ^Rendering, path: string, ptSize: int) -> b
 	}
 
 	loaded_font := TTF_OpenFont(path.c_str(), ptSize)
-	if (loaded_font == nullptr) {
+	if loaded_font == nil {
 		sdl.Log("Failed to load font with path %s", path.c_str());
 		return false;
 	}
@@ -65,7 +66,7 @@ load_default_font :: proc(rendering: ^Rendering, path: string, ptSize: int) -> b
 	return true;
 }
 
-draw_line :: proc(rendering: ^Rendering, int start_x, int start_y, int to_x, int to_y, sdl.Color color) {
+draw_line :: proc(rendering: ^Rendering, start_x: i64, start_y: i64, to_x: i64, to_y: i64, color: sdl.Color) {
 	r, g, b, a: u8
 	sdl.GetRenderDrawColor(rendering.renderer, &r, &g, &b, &a);
 	sdl.SetRenderDrawColor(rendering.renderer, color.r, color.g, color.b, color.a);
@@ -73,25 +74,25 @@ draw_line :: proc(rendering: ^Rendering, int start_x, int start_y, int to_x, int
 	sdl.SetRenderDrawColor(rendering.renderer, r, g, b, a)
 }
 
-draw_rect :: proc(x: int, y: int, int width, int height, sdl.Color color, bool fill) {
-	Uint8 r, g, b, a;
-	sdl.GetRenderDrawColor(this->renderer, &r, &g, &b, &a);
-	sdl.SetRenderDrawColor(this->renderer, color.r, color.g, color.b, color.a);
-	sdl.Rect rect = sdl.Rect{x, y, width, height};
+draw_rect :: proc(rendering: ^Rendering, x: int, y: int, width: int, height: int, color: sdl.Color, fill: bool) {
+	r, g, b, a: u8;
+	sdl.GetRenderDrawColor(rendering.renderer, &r, &g, &b, &a);
+	sdl.SetRenderDrawColor(rendering.renderer, color.r, color.g, color.b, color.a)
+	rect := sdl.Rect{x = x, y = y, w = width, h = height}
 	if fill {
-		sdl.RenderFillRect(this->renderer, &rect);
+		sdl.RenderFillRect(rendering.renderer, &rect);
 	} else {
-		sdl.RenderDrawRect(this->renderer, &rect);
+		sdl.RenderDrawRect(rendering.renderer, &rect);
 	}
-	sdl.SetRenderDrawColor(this->renderer, r, g, b, a);
+	sdl.SetRenderDrawColor(rendering.renderer, r, g, b, a);
 }
 
-draw_text :: proc(std::string text, sdl.Color color, int font_size, int x, int y, TTF_Font *font) {
-	TTF_Font *font_to_use = font != nullptr ? font : this->default_font;
-	sdl.Surface* textSurface = TTF_RenderText_Solid(font_to_use, text.c_str(), color);
-	texture := sdl.CreateTextureFromSurface(this->renderer, textSurface);
-	position := sdl.Rect{ x, y, (int)floor(font_size * text.length()), font_size };
-	sdl.RenderCopy(this->renderer, texture, NULL, &position);
+draw_text :: proc(rendering: ^Rendering, text: string, color: sdl.Color, font_size: int, x: int, y: int, font: ^ttf.Font) {
+	font_to_use: ^ttf.Font = font != nil ? font : rendering.default_font;
+	textSurface = ttf.RenderText_Solid(font_to_use, text.c_str(), color);
+	texture := sdl.CreateTextureFromSurface(rendering.renderer, textSurface);
+	position := sdl.Rect{ x = x, y = y, w = auto_cast floor(font_size * text.length()), h = font_size};
+	sdl.RenderCopy(rendering.renderer, texture, NULL, &position);
 	sdl.DestroyTexture(texture);
 	sdl.FreeSurface(textSurface);
 }	
@@ -104,81 +105,71 @@ load_and_save_texture :: proc(rendering: ^Rendering, path: string) -> (id: uint)
 		sdl.Log("Unable to load image! sdl.image Error: %s\n", IMG_GetError());
 	}
 
-	i := 0;
-	for rendering.textures[i] != nil; i += 1 {}
-	set_texture(rendering, i, sdl.CreateTextureFromSurface(rendering.renderer, surface));
+    append(rendering.textures, sdl.CreateTextureFromSurface(rendering.renderer, surface)) 
 	sdl.FreeSurface(surface);
-	return i;
+	return rendering.textures.count - 1;
 }
-draw_texture :: proc(sdl.Texture*, sdl.Rect*, sdl.Rect*) {
+draw_texture :: proc(rendering: ^Rendering, texture: ^sdl.Texture,  src: ^sdl.Rect, dest: ^sdl.Rect) {
 	sdl.RenderCopy(this->renderer, texture, src, dest);
 }
 
-draw_animation :: proc(Animation *anim, int x, int y, int w, int h) {
-	int a_x, a_y, a_w, a_h;
-	anim->get_frame(&a_x, &a_y, &a_w, &a_h);
-	sdl.Rect animation_quad = { a_x, a_y, a_w, a_h };
-	sdl.Rect location = {x, y, w, h };
-	this->draw_texture(anim->get_texture(), &animation_quad, &location);
+draw_animation :: proc(anim: ^Animation, x: int, y: int, w: int, h: int) {
+	a_x, a_y, a_w, a_h := get_frame(anim)
+	animation_quad := sdl.Rect{ x = a_x, y = a_y, w = a_w, h = a_h }
+	location := sdl.Rect{x = x, y = y, w = w, h = h}
+	draw_texture(get_texture(anim), &animation_quad, &location)
 }
 
-draw_animation :: proc(Animation *anim, int x, int y) {
-	int a_x, a_y, a_w, a_h;
-	anim.get_frame(&a_x, &a_y, &a_w, &a_h);
+draw_animation :: proc(anim: ^Animation, x: int, y: int) {
+	a_x, a_y, a_w, a_h := get_frame(anim);
 	animation_quad := sdl.Rect{a_x, a_y, a_w, a_h};
-	sdl.Rect location = { x, y, a_w, a_h };
-	this->draw_texture(anim->get_texture(), &animation_quad, &location);
+	location = sdl.Rect{ x, y, a_w, a_h };
+	draw_texture(anim, get_texture(anim), &animation_quad, &location);
 }
 
-void draw_stored_texture(int key, sdl.Rect *position, sdl.Rect *quad_section) {
-	auto *texture = this->get_texture(key);
-	this->draw_texture(texture, quad_section, position);
+draw_stored_texture :: proc(rendering: ^Rendering, key: int, position: ^sdl.Rect, quad_section: ^sdl.Rect) {
+	texture := get_texture(rendering, key);
+	draw_texture(rendering, texture, quad_section, position);
 }
 
-void draw_stored_texture(int key, sdl.Rect *position) {
-	auto *texture = this->get_texture(key);
-	this->draw_texture(texture, nullptr, position);
+draw_stored_texture :: proc(rendering: ^Rendering, key: int, position: ^sdl.Rect) {
+	texture := get_texture(rendering, key);
+	draw_texture(rendering, texture, nullptr, position);
 }
 
-store_text_as_texture(std::string text, TTF_Font *font, sdl.Color color) -> uint {
-	TTF_Font* font_to_use = font != nullptr ? font : this->default_font;
-	sdl.Surface* textSurface = TTF_RenderText_Solid(font_to_use, text.c_str(), color);
-	sdl.Texture* texture = sdl.CreateTextureFromSurface(this->renderer, textSurface);
-	int i = 0;
-	for this->texts[i] != nil { i += 1 }
-	this->texts[i] = texture;
-	return i;
+store_text_as_texture :: proc(rendering: ^Rendering, text: string, font: ^ttf.Font, color: sdl.Color) -> uint {
+	font_to_use := font != nil ? font : rendering.default_font
+	textSurface := TTF_RenderText_Solid(font_to_use, text.c_str(), color)
+	texture := sdl.CreateTextureFromSurface(this->renderer, textSurface)
+	append(rendering.texts, texture)
+	return rendering.texts.count
 }
 
 
-draw_stored_text :: proc(int key, int x, int y, int font_size, int string_length) {
-	sdl.Rect position = { x, y, font_size * string_length, font_size };
-	sdl.RenderCopy(this->renderer, this->texts[key], NULL, &position);
+draw_stored_text :: proc(rendering: ^Rendering, key: int, x: int, y: int, font_size: int, string_length: int) {
+	position := sdl.Rect{ x = x, y = y, w = font_size * string_length, h = font_size}
+	sdl.RenderCopy(rendering.renderer, rendering.texts[key], nil, &position)
 }
 
-get_stored_text :: proc(int key) -> ^sdl.Texture {
-	return this->texts[key];
+get_stored_text :: proc(rendering: ^Rendering, key: int) -> ^sdl.Texture {
+	return rendering.texts[key];
 }
 
-set_text :: proc(key: int, texture: ^sdl.Texture) {
-	this->texts[key] = texture;
-}
-
-draw_texture_rotated :: proc(sdl.Texture* texture, sdl.Rect* position, sdl.Rect* quad_section, double angle, sdl.Point* center, sdl.RendererFlip flip) {
+draw_texture_rotated :: proc(texture: ^sdl.Texture, position: ^sdl.Rect, quad_section: ^sdl.Rect, angle: f64, center: ^sdl.Point, flip: sdl.RendererFlip) {
 	sdl.RenderCopyEx(this->renderer, texture, quad_section, position, angle, center, flip);
 }
 
-draw_stored_texture_rotated :: proc (int key, sdl.Rect* position, sdl.Rect* quad_section, double angle, sdl.Point* center, sdl.RendererFlip flip) {
+draw_stored_texture_rotated :: proc(key: u64, position: ^sdl.Rect, quad_section: ^sdl.Rect, angle: f64, center: ^sdl.Point, flip: sdl.RendererFlip) {
 	auto* texture = this->get_texture(key);
 	this->draw_texture_rotated(texture, position, quad_section, angle, center, flip);
 }
 
-sdl.Texture* Rendering::get_texture(int key) {
-	return this->textures[key];
+get_texture :: proc(rendering: ^Rendering, key: int) -> ^sdl.Texture {
+	return rendering.textures[key];
 }
 
-void Rendering::set_texture(int key, sdl.Texture *texture) {
-	this->textures[key] = texture;
+set_texture :: proc(rendering: ^Rendering, int key, sdl.Texture *texture) {
+	rendering.textures[key] = texture;
 }
 
 set_texture_alpha :: proc(texture: ^sdl.Texture, alpha: u8) {
