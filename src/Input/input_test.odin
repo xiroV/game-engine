@@ -1,27 +1,21 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-#include <iostream>
-#include <string>
-#include "Input.hpp"
-#include "../Engine.h"
-#include "../Rendering/Rendering.hpp"
+package input
 
-struct TestState {
+TestState :: struct {
     bool jump_toggled = false;
     bool left_toggled = false;
     bool right_toggled = false;
     bool attack_toggled = false;
 };
 
-enum UserAction {
+UserAction :: enum {
     MoveLeft = 1,
     MoveRight,
     Jump,
     Attack,
     Select
-};
+}
 
-constexpr auto MAX_KEYS_PER_ACTION = 2;
+MAX_KEYS_PER_ACTION :: 2;
 
 std::string up_or_down(bool);
 std::string bool_string(bool);
@@ -30,7 +24,7 @@ const std::string useraction_to_name(Sint32 a);
 bool is_colliding(SDL_Point&, SDL_Rect&);
 void render_text(SDL_Renderer*, TTF_Font *, std::string, SDL_Color, int, int, int);
 
-int input_test() {
+input_test :: proc() {
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_JOYSTICK | SDL_WINDOW_RESIZABLE);
     TestState test_state;
     TTF_Init();

@@ -1,4 +1,4 @@
-package rendering_test
+package rendering
 
 import rend "rendering"
 
@@ -29,10 +29,10 @@ rendering_test :: proc() {
     r := SDL_Rect{200, 200, 200, 200}
     r2 := SDL_Rect{800, 200, 200, 200}
     windmill_rotation: f64 = 0;
-	no_touching_text := "No touching";
-	no_touching_size: u8 = no_touching_text.length();
-	hello_text := "Hello";
-	hello_size: u8 = hello_text.length();
+	no_touching_text: cstring = "No touching";
+	no_touching_size: u8 = len(no_touching_text)
+	hello_text: cstring = "Hello";
+	hello_size: u8 = len(hello_text)
 	no_touching_key: int = rendering.store_text_as_texture(no_touching_text, nullptr, WHITE);
 	hello_key: int = rendering.store_text_as_texture(hello_text, nullptr, WHITE);
 
