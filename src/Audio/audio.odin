@@ -5,23 +5,24 @@ import fmt "core:fmt"
 import sdl "vendor:sdl2"
 
 AudioManager :: struct {
-    sounds: [dynamic]^mixer.Chunk,
-    music: [dynamic]^mixer.Music,
+    sounds: map[int]^mixer.Chunk,
+    music: map[int]^mixer.Music,
 }
 
-initAudioManager :: proc() {
+initAudioManager :: proc() -> ^AudioManager {
     if (mixer.OpenAudio(44100, mixer.DEFAULT_FORMAT, 2, 2048) < 0) {
         fmt.println("Failed to initialize Mix. ", mixer.GetError())
     }
+    return new(AudioManager)
 }
 
-deinitAudioManager :: proc() {
+deinitAudioManager :: proc(audio: ^AudioManager) {
     mixer.Quit()
 }
 
 is_music_playing :: proc() -> bool { return mixer.PlayingMusic() != 0 }
 
-play_music :: proc(manager: ^AudioManager, key: u32, loop: i32) -> bool { 
+play_music :: proc(manager: ^AudioManager, key: int, loop: i32) -> bool { 
     return mixer.PlayMusic(manager.music[key], loop) == 0
 }
 
@@ -44,28 +45,33 @@ resume_music :: proc() -> bool {
     return is_music_playing()
 }
 
-play_sound :: proc(manager: ^AudioManager, key: i32) -> i32 {
+play_sound :: proc(manager: ^AudioManager, key: int) -> i32 {
     return mixer.PlayChannel(-1, manager.sounds[key], 0)
 }
 
-load_and_save_music :: proc(manager: ^AudioManager, path: cstring) -> (success: bool, id: int) {
+load_and_save_music :: proc(manager: ^AudioManager, path: cstring) -> (success: bool, key: int) {
     music := mixer.LoadMUS(path)
     
     if music == nil {
         sdl.Log("Unable to load music! SDL_mixer Error: %s\n", mixer.GetError())
-        return false, -1
+        success = false
+        key = -1
+        return
     }
     
-    append(&manager.music, music)
-    return true, len(manager.music) - 1
+    key = len(manager.music)
+    manager.music[key] = music
+    success = true
+    return
 }
 
-load_and_save_sound_effect :: proc(manager: ^AudioManager, path: cstring) -> int {
+load_and_save_sound_effect :: proc(manager: ^AudioManager, path: cstring) -> (key: int) {
     chunk := mixer.LoadWAV(path)
     if chunk == nil {
         sdl.Log("Unable to load sound! SDL_mixer Error: %s\n", mixer.GetError())
         return -1
     }
-    append(&manager.sounds, chunk)
-    return len(manager.sounds) - 1
+    key = len(manager.sounds)
+    manager.sounds[key] = chunk
+    return
 }

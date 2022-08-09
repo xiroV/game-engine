@@ -3,10 +3,11 @@ package main
 import "core:fmt"
 import sdl "vendor:sdl2"
 import ttf "vendor:sdl2/ttf"
-import ren "rendering"
 import eng "engine"
+import ren "rendering"
 import inp "input"
 import aud "audio"
+import tests "tests"
 
 WITH_TESTS :: true
 
@@ -14,9 +15,9 @@ when WITH_TESTS {
 
     main :: proc() {
         fmt.println("Hello")
-        inp.input_test()
-        ren.rendering_test()
-        aud.audio_test()
+        tests.input_test()
+        tests.rendering_test()
+        tests.audio_test()
     }
 
 } else {

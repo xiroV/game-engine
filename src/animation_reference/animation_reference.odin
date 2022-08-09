@@ -13,7 +13,7 @@ AnimationReference :: struct {
 	animation_height: i32,
 }
 
-initAnimation :: proc(texture: ^sdl.Texture, animation_width: i32, animation_height: i32, frames: i32, horizontal_texture: bool, destroy_on_delete: bool) -> (ref: ^AnimationReference, isValid: bool) {
+initAnimationReference :: proc(texture: ^sdl.Texture, animation_width: i32, animation_height: i32, frames: i32, horizontal_texture: bool, destroy_on_delete: bool) -> (ref: ^AnimationReference, isValid: bool) {
 	animationReference := new(AnimationReference)
 	w, h: i32
 	if sdl.QueryTexture(texture, nil, nil, &w, &h) == 0 {

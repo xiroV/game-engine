@@ -1,16 +1,16 @@
 package animation
 
 import sdl "vendor:sdl2"
-import animRef "../animationReference"
+import animRef "../animation_reference"
 
 Animation :: struct {
 	ref: ^animRef.AnimationReference,
-	animation_counter: i32,
-	frame_time: i32,
-	wrap_around_value: i32,
+	animation_counter: u32,
+	frame_time: u32,
+	wrap_around_value: u32,
 }
 
-initAnimation :: proc(reference: ^animRef.AnimationReference, frame_time: i32) -> ^Animation {
+initAnimation :: proc(reference: ^animRef.AnimationReference, frame_time: u32) -> ^Animation {
 	animation := new(Animation)
 	animation.ref = reference
 	animation.frame_time = frame_time
@@ -41,7 +41,7 @@ get_frame :: proc(animation: ^Animation) -> (i32, i32, i32, i32) {
     return x, y, w, h
 }
 	
-update :: proc(animation: ^Animation, delta: i32) {
+update :: proc(animation: ^Animation, delta: u32) {
     animation.animation_counter = (animation.animation_counter + delta) % animation.wrap_around_value
 }
 
