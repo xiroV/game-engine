@@ -153,53 +153,53 @@ MAX_KEYS_PER_ACTION :: 2;
 
 input_test :: proc() {
     test_state: TestState
-    
+    ttf.Init()
     font := ttf.OpenFont(".\\assets\\Font\\PressStart2P.ttf", 32);
-    defer {
-        ttf.CloseFont(font)
-        ttf.Quit()
-    }
 
+    defer ttf.Quit()
     if font == nil {
         fmt.println("Failed to load font")
         fmt.println(ttf.GetError())
         return;
     }
 
-    window: ^sdl.Window;
-    renderer: ^sdl.Renderer;
-    sdl.CreateWindowAndRenderer(1280, 720, sdl.WINDOW_ALLOW_HIGHDPI, &window, &renderer);
-    sdl.RenderSetLogicalSize(renderer, 1280, 720);    
-    sdl.SetRenderDrawColor(renderer, 0, 0, 0, sdl.ALPHA_OPAQUE);
-    sdl.RenderClear(renderer);
+    defer {
+        ttf.CloseFont(font)
+    }
 
+    engine := e.initEngine(true)
+    input := engine.input
+    rendering := engine.rendering
+    sdl.CreateWindowAndRenderer(1280, 720, sdl.WINDOW_ALLOW_HIGHDPI, &rendering.window, &rendering.renderer);
+    sdl.RenderSetLogicalSize(rendering.renderer, 1280, 720);    
+    sdl.SetRenderDrawColor(rendering.renderer, 0, 0, 0, sdl.ALPHA_OPAQUE);
+    sdl.RenderClear(rendering.renderer);
 
-    input := i.initInput()
+    
     input.controllers[0].controller_map[sdl.GameControllerButton.B] = auto_cast UserAction.Attack;
     input.controllers[0].controller_map[sdl.GameControllerButton.A] = auto_cast UserAction.Jump;
-    input.mouse_map[sdl.BUTTON_LEFT] = auto_cast UserAction.Select;
-    
-    rendering := r.initRendering()
 
+    input.mouse_map[sdl.BUTTON_LEFT] = auto_cast UserAction.Select;
+
+    
     i.bind_key_to_action(input, sdl.Keycode.LEFT, auto_cast UserAction.MoveLeft);
     i.bind_key_to_action(input, sdl.Keycode.LEFT, auto_cast UserAction.MoveLeft);
     i.bind_key_to_action(input, sdl.Keycode.SPACE, auto_cast UserAction.Jump);
     i.bind_key_to_action(input, sdl.Keycode.LCTRL, auto_cast UserAction.Attack);
 
+    
     i.bind_mouse_button_to_action(input, sdl.BUTTON_LEFT, auto_cast UserAction.Select);
 
     i.bind_controller_button_to_action(input, sdl.GameControllerButton.A, auto_cast UserAction.Attack, 0);
     i.bind_controller_button_to_action(input, sdl.GameControllerButton.B, auto_cast UserAction.Jump, 0);
 
-    engine := e.initEngine(input, rendering)
-
     for !i.handle_input(engine.input) {
         if (i.is_pressed(engine.input, auto_cast UserAction.Jump, true, 0)) {
-            test_state.jump_toggled = !test_state.jump_toggled;
+            test_state.jump_toggled = !test_state.jump_toggled
         }
 
         if (i.is_pressed(engine.input, auto_cast UserAction.Attack, true, 0)) {
-            test_state.attack_toggled = !test_state.attack_toggled;
+            test_state.attack_toggled = !test_state.attack_toggled
         }
 
         if (i.is_pressed(engine.input, auto_cast UserAction.MoveLeft, true, 0)) {
@@ -214,62 +214,61 @@ input_test :: proc() {
         mouseDelta := engine.input.mouse_delta;
         mouseWheel := engine.input.mouse_wheel;
 
-
         // Controller info
         
         text := fmt.aprintf("Controllers connected: %i\n", sdl.NumJoysticks());
 
-        r.draw_text(engine.rendering, text, r.WHITE, 25, 625, 5, font);
+        r.draw_text(rendering, text, r.WHITE, 25, 625, 5, font);
         j := 0;
         for controller in engine.input.controllers {
             x_column := j % 2;
             y_row := j / 2;
-            r.draw_text(engine.rendering, fmt.aprintf("Controller %i", j), r.WHITE, 12, 625 + x_column * 330, 35 + 100 * y_row, font)
-            r.draw_text(engine.rendering, fmt.aprintf("Left horizontal: %i", controller.left.horizontal_axis), r.WHITE, 12, 625 + x_column * 330, 50 + 100 * y_row, font)
-            r.draw_text(engine.rendering, fmt.aprintf("Left vertical: ", controller.left.vertical_axis), r.WHITE, 12, 625 + x_column * 330, 70 + 100 * y_row, font)
-            r.draw_text(engine.rendering, fmt.aprintf("Right horizontal: %i", controller.right.horizontal_axis), r.WHITE, 12, 625 + x_column * 330, 90 + 100 * y_row, font)
-            r.draw_text(engine.rendering, fmt.aprintf("Right vertical: %i", controller.right.vertical_axis), r.WHITE, 12, 625 + x_column * 330, 110 + 100 * y_row, font)
-            r.draw_text(engine.rendering, fmt.aprintf("Left trigger: %i", controller.left_trigger), r.WHITE, 12, 625 + x_column * 330, 130 + 100 * y_row, font)
-            r.draw_text(engine.rendering, fmt.aprintf("Right trigger: %i", controller.right_trigger), r.WHITE, 12, 625 + x_column * 330, 150 + 100 * y_row, font)
+            r.draw_text(rendering, fmt.aprintf("Controller %i", j), r.WHITE, 12, 625 + x_column * 330, 35 + 100 * y_row, font)
+            r.draw_text(rendering, fmt.aprintf("Left horizontal: %i", controller.left.horizontal_axis), r.WHITE, 12, 625 + x_column * 330, 50 + 100 * y_row, font)
+            r.draw_text(rendering, fmt.aprintf("Left vertical: ", controller.left.vertical_axis), r.WHITE, 12, 625 + x_column * 330, 70 + 100 * y_row, font)
+            r.draw_text(rendering, fmt.aprintf("Right horizontal: %i", controller.right.horizontal_axis), r.WHITE, 12, 625 + x_column * 330, 90 + 100 * y_row, font)
+            r.draw_text(rendering, fmt.aprintf("Right vertical: %i", controller.right.vertical_axis), r.WHITE, 12, 625 + x_column * 330, 110 + 100 * y_row, font)
+            r.draw_text(rendering, fmt.aprintf("Left trigger: %i", controller.left_trigger), r.WHITE, 12, 625 + x_column * 330, 130 + 100 * y_row, font)
+            r.draw_text(rendering, fmt.aprintf("Right trigger: %i", controller.right_trigger), r.WHITE, 12, 625 + x_column * 330, 150 + 100 * y_row, font)
             j += 1;
         }
 
         // For each action, show bound key;
         // On click, set rebind for a key.
-        r.draw_text(engine.rendering, fmt.aprintf("Jump toggled %b", bool_string(test_state.jump_toggled)), r.WHITE, 25, 10, 5, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Attack toggled %b", bool_string(test_state.attack_toggled)), r.WHITE, 25, 10, 40, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Left toggled %b", bool_string(test_state.left_toggled)), r.WHITE, 25, 10, 75, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Right toggled %b", bool_string(test_state.right_toggled)), r.WHITE, 25, 10, 110, font);
+        r.draw_text(rendering, fmt.aprintf("Jump toggled %b", bool_string(test_state.jump_toggled)), r.WHITE, 25, 10, 5, font)
+        r.draw_text(rendering, fmt.aprintf("Attack toggled %b", bool_string(test_state.attack_toggled)), r.WHITE, 25, 10, 40, font)
+        r.draw_text(rendering, fmt.aprintf("Left toggled %b", bool_string(test_state.left_toggled)), r.WHITE, 25, 10, 75, font)
+        r.draw_text(rendering, fmt.aprintf("Right toggled %b", bool_string(test_state.right_toggled)), r.WHITE, 25, 10, 110, font);
 
-        r.draw_text(engine.rendering, fmt.aprintf("Jump %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.Jump, true, 0))), r.WHITE, 25, 10, 145, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Attack %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.Attack, true, 0))), r.WHITE, 25, 10, 180, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Left %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.MoveLeft, true, 0))), r.WHITE, 25, 10, 215, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Right %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.MoveRight, true, 0))), r.WHITE, 25, 10, 250, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Mouse pos x: %i", mouseCoordinates.x), r.WHITE, 25, 10, 285, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Mouse pos y: %i", mouseCoordinates.y), r.WHITE, 25, 10, 320, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Mouse delta x: %i", mouseDelta.x), r.WHITE, 25, 10, 355, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Mouse delta y: %i", mouseDelta.y), r.WHITE, 25, 10, 390, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Mouse scroll x: %i", mouseWheel.x), r.WHITE, 25, 10, 425, font)
-        r.draw_text(engine.rendering, fmt.aprintf("Mouse scroll y: %i", mouseWheel.y), r.WHITE, 25, 10, 465, font)
-        r.draw_text(engine.rendering, "Action", r.GREEN, 25, 10, 500, font)
-        r.draw_text(engine.rendering, "Key", r.GREEN, 25, 250, 500, font)
-        r.draw_text(engine.rendering, "Key 2", r.GREEN, 25, 500, 500, font)
-        r.draw_text(engine.rendering, "Controller", r.GREEN, 25, 750, 500, font)
+        r.draw_text(rendering, fmt.aprintf("Jump %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.Jump, true, 0))), r.WHITE, 25, 10, 145, font)
+        r.draw_text(rendering, fmt.aprintf("Attack %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.Attack, true, 0))), r.WHITE, 25, 10, 180, font)
+        r.draw_text(rendering, fmt.aprintf("Left %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.MoveLeft, true, 0))), r.WHITE, 25, 10, 215, font)
+        r.draw_text(rendering, fmt.aprintf("Right %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.MoveRight, true, 0))), r.WHITE, 25, 10, 250, font)
+        r.draw_text(rendering, fmt.aprintf("Mouse pos x: %i", mouseCoordinates.x), r.WHITE, 25, 10, 285, font)
+        r.draw_text(rendering, fmt.aprintf("Mouse pos y: %i", mouseCoordinates.y), r.WHITE, 25, 10, 320, font)
+        r.draw_text(rendering, fmt.aprintf("Mouse delta x: %i", mouseDelta.x), r.WHITE, 25, 10, 355, font)
+        r.draw_text(rendering, fmt.aprintf("Mouse delta y: %i", mouseDelta.y), r.WHITE, 25, 10, 390, font)
+        r.draw_text(rendering, fmt.aprintf("Mouse scroll x: %i", mouseWheel.x), r.WHITE, 25, 10, 425, font)
+        r.draw_text(rendering, fmt.aprintf("Mouse scroll y: %i", mouseWheel.y), r.WHITE, 25, 10, 465, font)
+        r.draw_text(rendering, "Action", r.GREEN, 25, 10, 500, font)
+        r.draw_text(rendering, "Key", r.GREEN, 25, 250, 500, font)
+        r.draw_text(rendering, "Key 2", r.GREEN, 25, 500, 500, font)
+        r.draw_text(rendering, "Controller", r.GREEN, 25, 750, 500, font)
 
         k := 0;
-        sdl.SetRenderDrawColor(engine.rendering.renderer, 255, 255, 255, 255);
+        sdl.SetRenderDrawColor(rendering.renderer, 255, 255, 255, 255);
         for act in UserAction {
             action_name := useraction_to_name(act)
             mapped_count := MAX_KEYS_PER_ACTION
             y := 535 + 35 * k
-            r.draw_text(engine.rendering, action_name, r.WHITE, 25, 10, y, font)
+            r.draw_text(rendering, action_name, r.WHITE, 25, 10, y, font)
             j := 0
             for key, value in engine.input.key_map {
                 if value != auto_cast act || mapped_count == 0 do continue;
                 mapped_count -= 1
                 rect := sdl.Rect{ auto_cast (250 - 4 + j * 250), auto_cast (y - 4), 240, 32 };
-                sdl.RenderDrawRect(engine.rendering.renderer, &rect);
-                r.draw_text(engine.rendering, string(sdl.GetKeyName(key)), r.WHITE, 25, 250 + j * 250, y, font);
+                sdl.RenderDrawRect(rendering.renderer, &rect);
+                r.draw_text(rendering, string(sdl.GetKeyName(key)), r.WHITE, 25, 250 + j * 250, y, font);
                 j += 1;
                 if (sdl.PointInRect(&mouseCoordinates, &rect) && i.is_mouse_button_pressed(engine.input, sdl.BUTTON_LEFT)) {
                     fmt.println("Preparing to rebind ", action_name, " with intention to erase ", string(sdl.GetKeyName(key)))
@@ -281,8 +280,8 @@ input_test :: proc() {
                 if value != auto_cast act || mapped_count == 0 do continue;
                 mapped_count -= 1;
                 rect:= sdl.Rect { auto_cast (250 - 4 + j * 250), auto_cast (y - 4), 240, 32 };
-                sdl.RenderDrawRect(renderer, &rect);
-                r.draw_text(engine.rendering, mouse_button_to_name(key), r.WHITE, 25, 250 + j * 250, y, font);
+                sdl.RenderDrawRect(rendering.renderer, &rect);
+                r.draw_text(rendering, mouse_button_to_name(key), r.WHITE, 25, 250 + j * 250, y, font);
                 j += 1;
                 if (sdl.PointInRect(&mouseCoordinates, &rect) && i.is_mouse_button_pressed(engine.input, sdl.BUTTON_LEFT)) {
                     i.start_rebind_mouse_action(engine.input, auto_cast act, auto_cast key);
@@ -291,9 +290,9 @@ input_test :: proc() {
 
             if (mapped_count > 0) {
                 for ; mapped_count > 0; mapped_count -= 1 {
-                    r.draw_text(engine.rendering, "Unmapped", r.WHITE, 25, 250 + j * 250, y, font);
+                    r.draw_text(rendering, "Unmapped", r.WHITE, 25, 250 + j * 250, y, font);
                     rect := sdl.Rect { auto_cast (250 - 4 + j * 250), auto_cast (y - 4), 240, 32 };
-                    sdl.RenderDrawRect(renderer, &rect);
+                    sdl.RenderDrawRect(rendering.renderer, &rect);
                     j += 1;
 
                     if (sdl.PointInRect(&mouseCoordinates, &rect) && i.is_mouse_button_pressed(engine.input, sdl.BUTTON_LEFT)) {
@@ -318,9 +317,9 @@ input_test :: proc() {
             } else { 
                 button_text = string(sdl.GameControllerGetStringForButton(auto_cast button))
             }
-            r.draw_text(engine.rendering, button_text, r.WHITE, 25, 250 + j * 250, y, font)
+            r.draw_text(rendering, button_text, r.WHITE, 25, 250 + j * 250, y, font)
             rect := sdl.Rect { auto_cast (250 - 4 + j * 250), auto_cast (y - 4), 240, 32 }
-            sdl.RenderDrawRect(renderer, &rect);
+            sdl.RenderDrawRect(rendering.renderer, &rect);
             j += 1;
 
             if sdl.PointInRect(&mouseCoordinates, &rect) && i.is_mouse_button_pressed(engine.input, sdl.BUTTON_LEFT) {
@@ -330,10 +329,10 @@ input_test :: proc() {
             k += 1;
         }
 
-        sdl.SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        sdl.SetRenderDrawColor(rendering.renderer, 0, 0, 0, 255);
 
-        sdl.RenderPresent(renderer);
-        sdl.RenderClear(renderer);
+        sdl.RenderPresent(rendering.renderer);
+        sdl.RenderClear(rendering.renderer);
     }
 }
 

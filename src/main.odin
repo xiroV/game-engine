@@ -14,10 +14,9 @@ WITH_TESTS :: true
 when WITH_TESTS {
 
     main :: proc() {
-        fmt.println("Hello")
         tests.input_test()
-        tests.rendering_test()
-        tests.audio_test()
+        // tests.rendering_test()
+        // tests.audio_test()
     }
 
 } else {

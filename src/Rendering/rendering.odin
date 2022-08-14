@@ -19,22 +19,23 @@ Rendering :: struct {
 	window: ^sdl.Window,
 	renderer: ^sdl.Renderer,
 	default_font: ^ttf.Font,
-	textures: map[int]^sdl.Texture,
-	texts: map[int]^sdl.Texture,
+	textures: ^map[int]^sdl.Texture,
+	texts: ^map[int]^sdl.Texture,
 	scale_x: f64,
 	scale_y: f64,
 }
 
 initRendering :: proc(width: i32  = 1280, height: i32  = 720, resizable: bool = true) -> ^Rendering {
 	rendering := new(Rendering)
+	rendering.textures = new(map[int]^sdl.Texture)
+	rendering.texts = new(map[int]^sdl.Texture)
 
-	fmt.println(resizable, "not handling resizeable yet")
+	fmt.println("resize = %b, not handling resizeable yet", resizable)
 
-	flags := sdl.INIT_VIDEO | sdl.INIT_GAMECONTROLLER | sdl.INIT_JOYSTICK | sdl.INIT_AUDIO
-	sdl.Init(flags)
+	sdl.Init(sdl.INIT_VIDEO | sdl.INIT_GAMECONTROLLER | sdl.INIT_JOYSTICK | sdl.INIT_AUDIO)
 	ttf.Init()
 	img.Init(img.INIT_PNG)
-	sdl.CreateWindowAndRenderer(auto_cast width, auto_cast height, sdl.WINDOW_ALLOW_HIGHDPI, &rendering.window, &rendering.renderer)
+	sdl.CreateWindowAndRenderer(width, height, sdl.WINDOW_ALLOW_HIGHDPI, &rendering.window, &rendering.renderer)
 	sdl.RenderSetLogicalSize(rendering.renderer, width, height)
 	sdl.SetRenderDrawColor(rendering.renderer, 0, 0, 0, sdl.ALPHA_OPAQUE)
 	sdl.RenderClear(rendering.renderer)

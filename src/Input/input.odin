@@ -37,6 +37,11 @@ ControllerAnalog :: struct {
 initController :: proc() -> ^Controller {
     controller := new(Controller)
     controller.instance_id = -1
+    controller.controller_map = new(ControllerMap)
+    controller.controller_held = new(ControllerPresses) 
+    controller.controller_pressed = new(ControllerPresses) 
+    controller.direct_button_held = new(DirectControllerMap) 
+    controller.direct_button_pressed = new(DirectControllerMap) 
     return controller
 }
 
@@ -140,6 +145,18 @@ initInput :: proc() -> ^Input {
     input.mouse_button_to_replace = 0
     input.controller_button_to_replace = sdl.GameControllerButton.INVALID
     input.max_controllers = 8
+
+    input.key_map = new(KeyMap)
+    input.key_held = new(KeyPresses)
+    input.key_pressed = new(KeyPresses)
+    input.direct_key_held = new(DirectKeyMap)
+    input.direct_key_pressed = new(DirectKeyMap)
+    input.direct_mouse_held = new(DirectMouseMap)
+    input.direct_mouse_pressed = new(DirectMouseMap)
+    input.mouse_map = new(MouseMap)
+    input.mouse_pressed = new(MousePresses)
+    input.mouse_held = new(MousePresses)
+    input.controllers = new(ControllerList)
 
     append(input.controllers, initController())
     return input
