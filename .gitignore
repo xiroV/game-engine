@@ -1,7 +1,6 @@
 .idea
 .vscode/c_cpp_properties.json
 .vscode/settings.json
-engine
 engine-test
 .vs/**
 Debug/**
@@ -22,3 +21,6 @@ out/
 SDL2/
 .vscode/tasks.json
 **/*.exe
+*.exe
+main.exe
+main.exe
