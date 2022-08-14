@@ -54,15 +54,15 @@ Controller :: struct {
     // The triggers value if pressed
     right_trigger: i16,
     // The map of controller buttons to their associated actions.
-    controller_map: ControllerMap,
+    controller_map: ^ControllerMap,
     // Map of actions to whether or not is currently held
-    controller_held: ControllerPresses, 
+    controller_held: ^ControllerPresses, 
     // Map of actions to whether or not is pressed exactly once
-    controller_pressed: ControllerPresses, 
+    controller_pressed: ^ControllerPresses, 
     // Direct map signifiying whether a specific button is held
-    direct_button_held: DirectControllerMap, 
+    direct_button_held: ^DirectControllerMap, 
     // Direct map signifiying whether a specific button is pressed exactly once.
-    direct_button_pressed: DirectControllerMap, 
+    direct_button_pressed: ^DirectControllerMap, 
     // Action being rebound
     rebind_action: i32,
     // Button being overwritten when rebinding, if any.
@@ -109,29 +109,29 @@ Input :: struct {
     // Can also be found in 'direct_key_held' and 'direct_key_pressed'
     escape_pressed: bool,
     // A map of keyboard keys mapped to user actions
-    key_map: KeyMap,
+    key_map: ^KeyMap,
     // A map of actions mapped to whether the actions is held down
-    key_held: KeyPresses,
+    key_held: ^KeyPresses,
     // A map of actions mapped to whether the actions is pressed exactly once.
-    key_pressed: KeyPresses,
+    key_pressed: ^KeyPresses,
     // A map of keyboard key mapped to whether or not it is held down
-    direct_key_held: DirectKeyMap,
+    direct_key_held: ^DirectKeyMap,
     // A map of keyboard key mapped to whether or not it is pressed exactly once
-    direct_key_pressed: DirectKeyMap,
+    direct_key_pressed: ^DirectKeyMap,
     // A map of mouse buttons mapped to whether or not it is held down
-    direct_mouse_held: DirectMouseMap,
+    direct_mouse_held: ^DirectMouseMap,
     // A map of mouse buttons mapped to whether or not it is pressed exactly once
-    direct_mouse_pressed: DirectMouseMap,
+    direct_mouse_pressed: ^DirectMouseMap,
     // A map of mouse buttons mapped to user actions
-    mouse_map: MouseMap,
+    mouse_map: ^MouseMap,
     // A map of actions mapped to whether the actions is held down
-    mouse_pressed: MousePresses,
+    mouse_pressed: ^MousePresses,
     // A map of actions mapped to whether the actions is pressed exactly once
-    mouse_held: MousePresses,
+    mouse_held: ^MousePresses,
     // The max allowed controllers attached at any point. 
     max_controllers: int,
     // List of controllers. Content is filled lazily.
-    controllers: ControllerList,
+    controllers: ^ControllerList,
 }
 
 initInput :: proc() -> ^Input {
@@ -141,7 +141,7 @@ initInput :: proc() -> ^Input {
     input.controller_button_to_replace = sdl.GameControllerButton.INVALID
     input.max_controllers = 8
 
-    append(&input.controllers, initController())
+    append(input.controllers, initController())
     return input
 }
 
@@ -192,7 +192,7 @@ is_controller_held :: proc(input: ^Input, button: u8, controller: u8) -> bool {
 next_free_controller_slot :: proc(input: ^Input) -> (bool, i32) {
     for i := 0; i < input.max_controllers; i += 1 {
         if i >= len(input.controllers) {
-            append(&input.controllers, initController())
+            append(input.controllers, initController())
             return true, auto_cast (i + 1)
         }
 
@@ -312,10 +312,10 @@ handle_input :: proc(input: ^Input) -> bool {
                 key := e.key.keysym.sym
                 if input.rebinding {
                     if (input.keyboard_key_to_replace != sdl.Keycode.UNKNOWN) {
-                        delete_key(&input.key_map, input.keyboard_key_to_replace)
+                        delete_key(input.key_map, input.keyboard_key_to_replace)
                         input.keyboard_key_to_replace = sdl.Keycode.UNKNOWN
                     } else if (input.mouse_button_to_replace != 0) {
-                        delete_key(&input.mouse_map, input.mouse_button_to_replace)
+                        delete_key(input.mouse_map, input.mouse_button_to_replace)
                         input.mouse_button_to_replace = 0
                     }
                     bind_key(input, key)
@@ -343,10 +343,10 @@ handle_input :: proc(input: ^Input) -> bool {
                 button := e.button.button
                 if input.rebinding {
                     if input.keyboard_key_to_replace != sdl.Keycode.UNKNOWN {
-                        delete_key(&input.key_map, input.keyboard_key_to_replace)
+                        delete_key(input.key_map, input.keyboard_key_to_replace)
                         input.keyboard_key_to_replace = sdl.Keycode.UNKNOWN
                     } else if input.mouse_button_to_replace != 0 {
-                        delete_key(&input.mouse_map, input.mouse_button_to_replace)
+                        delete_key(input.mouse_map, input.mouse_button_to_replace)
                         input.mouse_button_to_replace = 0
                     }
                     bind_mouse_button(input, button)
@@ -406,7 +406,7 @@ handle_input :: proc(input: ^Input) -> bool {
                 button := e.cbutton.button
                 if controller.rebinding {
                     if (controller.button_to_replace != sdl.GameControllerButton.INVALID) {
-                        delete_key(&controller.controller_map, controller.button_to_replace)
+                        delete_key(controller.controller_map, controller.button_to_replace)
                         controller.button_to_replace = sdl.GameControllerButton.INVALID
                     }
                     controller.controller_map[auto_cast button] = controller.rebind_action

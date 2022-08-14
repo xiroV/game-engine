@@ -7,6 +7,7 @@ import ttf "vendor:sdl2/ttf"
 import img "vendor:sdl2/image"
 import math "core:math"
 import fmt "core:fmt"
+import strings "core:strings"
 
 WHITE :: sdl.Color{255, 255, 255, sdl.ALPHA_OPAQUE}
 BLACK :: sdl.Color{0, 0, 0, sdl.ALPHA_OPAQUE}
@@ -90,26 +91,30 @@ draw_rect :: proc(rendering: ^Rendering, x: i32, y: i32, width: i32, height: i32
 	sdl.SetRenderDrawColor(rendering.renderer, r, g, b, a)
 }
 
-draw_text :: proc(rendering: ^Rendering, text: cstring, color: sdl.Color, font_size: i32, x: i32, y: i32, font: ^ttf.Font) {
+draw_text :: proc(rendering: ^Rendering, text: string, color: sdl.Color, font_size: int, x: int, y: int, font: ^ttf.Font) {
 	font_to_use: ^ttf.Font = font != nil ? font : rendering.default_font
-	textSurface := ttf.RenderText_Solid(font_to_use, text, color)
+	
+	str: strings.Builder
+    strings.init_builder(&str, context.temp_allocator)
+    fmt.sbprintf(&str, text)
+    strings.write_byte(&str, 0)
+
+	textSurface := ttf.RenderText_Solid(font_to_use, strings.unsafe_string_to_cstring(strings.to_string(str)), color)
 	texture := sdl.CreateTextureFromSurface(rendering.renderer, textSurface)
-	position := sdl.Rect{ x = auto_cast x, y = auto_cast y, w = font_size * auto_cast len(text), h = font_size}
+	position := sdl.Rect{ x = auto_cast x, y = auto_cast y, w = auto_cast (font_size * len(text)), h = auto_cast font_size}
 	sdl.RenderCopy(rendering.renderer, texture, nil, &position)
 	sdl.DestroyTexture(texture)
 	sdl.FreeSurface(textSurface)
-}	
+}
 
-load_and_save_texture :: proc(rendering: ^Rendering, path: cstring) -> (key: int) {
+load_and_save_texture :: proc(using rendering: ^Rendering, path: cstring) -> (key: int) {
 	new_texture: ^sdl.Texture = nil
 	surface: ^sdl.Surface = img.Load(path)
 
-	if surface == nil {
-		sdl.Log("Unable to load image! sdl.image Error: %s\n", img.GetError())
-	}
+	if surface == nil do sdl.Log("Unable to load image! sdl.image Error: %s\n", img.GetError())
 
-	key = len(rendering.textures)
-	rendering.textures[key] = sdl.CreateTextureFromSurface(rendering.renderer, surface)
+	key = len(textures)
+	textures[key] = sdl.CreateTextureFromSurface(renderer, surface)
 	sdl.FreeSurface(surface)
 	return
 }

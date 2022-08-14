@@ -21,3 +21,4 @@ SDL2-2.0*
 out/
 SDL2/
 .vscode/tasks.json
+**/*.exe

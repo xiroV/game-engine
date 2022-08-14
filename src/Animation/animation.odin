@@ -15,7 +15,7 @@ initAnimation :: proc(reference: ^animRef.AnimationReference, frame_time: u32) -
 	animation.ref = reference
 	animation.frame_time = frame_time
 	animation.animation_counter = 0
-	animation.wrap_around_value = reference.frames * frame_time
+	animation.wrap_around_value = auto_cast reference.frames * frame_time
 	return animation
 }
 
@@ -32,11 +32,11 @@ get_frame :: proc(animation: ^Animation) -> (i32, i32, i32, i32) {
     x: i32 = 0
 
     if (animation.ref.horizontal_texture) {
-        x = frame * animation.ref.animation_width
+        x = auto_cast frame * animation.ref.animation_width
         y = 0
     } else {
         x = 0
-        y = frame * animation.ref.animation_height
+        y = auto_cast frame * animation.ref.animation_height
     }
     return x, y, w, h
 }
