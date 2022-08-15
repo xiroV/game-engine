@@ -105,9 +105,14 @@ to_string :: proc(foo: $T) -> cstring {
 }
 
 audio_test :: proc() {
-	audio := a.initAudioManager()
-	rendering := r.initRendering()
-	input := i.initInput()
+
+    engine := e.initEngine(true)
+	// TODO(Jonas): Move into initEngine call
+    audio := a.initAudioManager()
+    input := engine.input
+    rendering := engine.rendering
+
+
 	r.load_default_font(rendering, "./assets/Font/PressStart2P.ttf", 32)
 	boing_audio_id := a.load_and_save_sound_effect(audio, "./assets/Sounds/boing.wav")
 	success, elevator_music_audio_id := a.load_and_save_music(audio, "./assets/Sounds/beat.wav")
@@ -170,11 +175,6 @@ input_test :: proc() {
     engine := e.initEngine(true)
     input := engine.input
     rendering := engine.rendering
-    sdl.CreateWindowAndRenderer(1280, 720, sdl.WINDOW_ALLOW_HIGHDPI, &rendering.window, &rendering.renderer);
-    sdl.RenderSetLogicalSize(rendering.renderer, 1280, 720);    
-    sdl.SetRenderDrawColor(rendering.renderer, 0, 0, 0, sdl.ALPHA_OPAQUE);
-    sdl.RenderClear(rendering.renderer);
-
     
     input.controllers[0].controller_map[sdl.GameControllerButton.B] = auto_cast UserAction.Attack;
     input.controllers[0].controller_map[sdl.GameControllerButton.A] = auto_cast UserAction.Jump;
@@ -193,30 +193,32 @@ input_test :: proc() {
     i.bind_controller_button_to_action(input, sdl.GameControllerButton.A, auto_cast UserAction.Attack, 0);
     i.bind_controller_button_to_action(input, sdl.GameControllerButton.B, auto_cast UserAction.Jump, 0);
 
-    for !i.handle_input(engine.input) {
-        if (i.is_pressed(engine.input, auto_cast UserAction.Jump, true, 0)) {
+    for !i.handle_input(input) {
+        if input.escape_pressed do break
+
+        if (i.is_pressed(input, auto_cast UserAction.Jump, true, 0)) {
             test_state.jump_toggled = !test_state.jump_toggled
         }
 
-        if (i.is_pressed(engine.input, auto_cast UserAction.Attack, true, 0)) {
+        if (i.is_pressed(input, auto_cast UserAction.Attack, true, 0)) {
             test_state.attack_toggled = !test_state.attack_toggled
         }
 
-        if (i.is_pressed(engine.input, auto_cast UserAction.MoveLeft, true, 0)) {
+        if (i.is_pressed(input, auto_cast UserAction.MoveLeft, true, 0)) {
             test_state.left_toggled = !test_state.left_toggled;
         }
 
-        if (i.is_pressed(engine.input, auto_cast UserAction.MoveRight, true, 0)) {
+        if (i.is_pressed(input, auto_cast UserAction.MoveRight, true, 0)) {
             test_state.right_toggled = !test_state.right_toggled;
         }
 
-        mouseCoordinates := engine.input.mouse_position;
-        mouseDelta := engine.input.mouse_delta;
-        mouseWheel := engine.input.mouse_wheel;
+        mouseCoordinates := input.mouse_position;
+        mouseDelta := input.mouse_delta;
+        mouseWheel := input.mouse_wheel;
 
         // Controller info
         
-        text := fmt.aprintf("Controllers connected: %i\n", sdl.NumJoysticks());
+        text := fmt.aprintf("Controllers connected: %i", sdl.NumJoysticks());
 
         r.draw_text(rendering, text, r.WHITE, 25, 625, 5, font);
         j := 0;
@@ -225,7 +227,7 @@ input_test :: proc() {
             y_row := j / 2;
             r.draw_text(rendering, fmt.aprintf("Controller %i", j), r.WHITE, 12, 625 + x_column * 330, 35 + 100 * y_row, font)
             r.draw_text(rendering, fmt.aprintf("Left horizontal: %i", controller.left.horizontal_axis), r.WHITE, 12, 625 + x_column * 330, 50 + 100 * y_row, font)
-            r.draw_text(rendering, fmt.aprintf("Left vertical: ", controller.left.vertical_axis), r.WHITE, 12, 625 + x_column * 330, 70 + 100 * y_row, font)
+            r.draw_text(rendering, fmt.aprintf("Left vertical: %i", controller.left.vertical_axis), r.WHITE, 12, 625 + x_column * 330, 70 + 100 * y_row, font)
             r.draw_text(rendering, fmt.aprintf("Right horizontal: %i", controller.right.horizontal_axis), r.WHITE, 12, 625 + x_column * 330, 90 + 100 * y_row, font)
             r.draw_text(rendering, fmt.aprintf("Right vertical: %i", controller.right.vertical_axis), r.WHITE, 12, 625 + x_column * 330, 110 + 100 * y_row, font)
             r.draw_text(rendering, fmt.aprintf("Left trigger: %i", controller.left_trigger), r.WHITE, 12, 625 + x_column * 330, 130 + 100 * y_row, font)
@@ -235,10 +237,10 @@ input_test :: proc() {
 
         // For each action, show bound key;
         // On click, set rebind for a key.
-        r.draw_text(rendering, fmt.aprintf("Jump toggled %b", bool_string(test_state.jump_toggled)), r.WHITE, 25, 10, 5, font)
-        r.draw_text(rendering, fmt.aprintf("Attack toggled %b", bool_string(test_state.attack_toggled)), r.WHITE, 25, 10, 40, font)
-        r.draw_text(rendering, fmt.aprintf("Left toggled %b", bool_string(test_state.left_toggled)), r.WHITE, 25, 10, 75, font)
-        r.draw_text(rendering, fmt.aprintf("Right toggled %b", bool_string(test_state.right_toggled)), r.WHITE, 25, 10, 110, font);
+        r.draw_text(rendering, fmt.aprintf("Jump toggled %s", bool_string(test_state.jump_toggled)), r.WHITE, 25, 10, 5, font)
+        r.draw_text(rendering, fmt.aprintf("Attack toggled %s", bool_string(test_state.attack_toggled)), r.WHITE, 25, 10, 40, font)
+        r.draw_text(rendering, fmt.aprintf("Left toggled %s", bool_string(test_state.left_toggled)), r.WHITE, 25, 10, 75, font)
+        r.draw_text(rendering, fmt.aprintf("Right toggled %s", bool_string(test_state.right_toggled)), r.WHITE, 25, 10, 110, font);
 
         r.draw_text(rendering, fmt.aprintf("Jump %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.Jump, true, 0))), r.WHITE, 25, 10, 145, font)
         r.draw_text(rendering, fmt.aprintf("Attack %s", up_or_down(i.is_held(engine.input, auto_cast UserAction.Attack, true, 0))), r.WHITE, 25, 10, 180, font)

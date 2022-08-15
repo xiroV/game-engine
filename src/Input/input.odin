@@ -3,6 +3,8 @@ package input
 import "core:fmt"
 import sdl "vendor:sdl2"
 
+Keycode :: sdl.Keycode
+
 InputState :: enum {
     Listening,
     Rebinding,
@@ -299,18 +301,17 @@ start_rebind_action_controller :: proc(input: ^Input, action: i32, controller: i
 handle_input :: proc(input: ^Input) -> bool {
     input.escape_pressed = false
 
-    e: sdl.Event
     y :i32 = 0
     x :i32 = 0
     input.mouse_wheel = { 0, 0 }
     input.mouse_delta = { 0, 0 }
+    e: sdl.Event
     for sdl.PollEvent(&e) {
-        if e.type == sdl.EventType.KEYDOWN && e.key.keysym.sym == sdl.Keycode.ESCAPE do input.escape_pressed = true
-        
+        if e.type == .KEYDOWN && e.key.keysym.sym == sdl.Keycode.ESCAPE do input.escape_pressed = true
         #partial switch (e.type) {
-            case sdl.EventType.QUIT:
+            case .QUIT:
                 return true
-            case sdl.EventType.CONTROLLERDEVICEADDED: {
+            case .CONTROLLERDEVICEADDED: {
                 valid, player := next_free_controller_slot(input)
                 if !valid do continue
                 instance_id := assign_controller(e.cdevice.which, player)
@@ -318,14 +319,14 @@ handle_input :: proc(input: ^Input) -> bool {
                 input.controllers[player].instance_id = auto_cast instance_id
                 continue
             }
-            case sdl.EventType.CONTROLLERDEVICEREMOVED: {
+            case .CONTROLLERDEVICEREMOVED: {
                 unassign_controller(input, auto_cast e.cdevice.which)
                 continue
             }
-            case sdl.EventType.CONTROLLERDEVICEREMAPPED:
+            case .CONTROLLERDEVICEREMAPPED:
                 fmt.println("Remapped, unhandled")
                 continue
-            case sdl.EventType.KEYDOWN: {
+            case .KEYDOWN: {
                 key := e.key.keysym.sym
                 if input.rebinding {
                     if (input.keyboard_key_to_replace != sdl.Keycode.UNKNOWN) {
@@ -347,7 +348,7 @@ handle_input :: proc(input: ^Input) -> bool {
                 }
                 continue
             }
-            case sdl.EventType.KEYUP: {
+            case .KEYUP: {
                 key := e.key.keysym.sym
                 action := input.key_map[key]
                 input.key_pressed[action] = false
@@ -356,7 +357,7 @@ handle_input :: proc(input: ^Input) -> bool {
                 input.direct_key_held[key] = false
                 continue
             }
-            case sdl.EventType.MOUSEBUTTONDOWN: {
+            case .MOUSEBUTTONDOWN: {
                 button := e.button.button
                 if input.rebinding {
                     if input.keyboard_key_to_replace != sdl.Keycode.UNKNOWN {
@@ -377,7 +378,7 @@ handle_input :: proc(input: ^Input) -> bool {
                 }
                 continue
             }
-            case sdl.EventType.MOUSEBUTTONUP: {
+            case .MOUSEBUTTONUP: {
                 button := e.button.button
                 action := input.mouse_map[button]
                 input.mouse_held[action] = false
@@ -386,7 +387,7 @@ handle_input :: proc(input: ^Input) -> bool {
                 input.direct_mouse_pressed[button] = false
                 continue
             }
-            case sdl.EventType.CONTROLLERAXISMOTION: {
+            case .CONTROLLERAXISMOTION: {
                 which_controller := e.caxis.which
                 player_index := sdl.GameControllerGetPlayerIndex(sdl.GameControllerFromInstanceID(e.caxis.which))
                 c := input.controllers[player_index]
@@ -417,7 +418,7 @@ handle_input :: proc(input: ^Input) -> bool {
                 }
                 continue
             }
-            case sdl.EventType.CONTROLLERBUTTONDOWN: {
+            case .CONTROLLERBUTTONDOWN: {
                 player := sdl.GameControllerGetPlayerIndex(sdl.GameControllerFromInstanceID(e.cbutton.which))
                 controller := input.controllers[player]
                 button := e.cbutton.button
@@ -437,7 +438,7 @@ handle_input :: proc(input: ^Input) -> bool {
                 }
                 continue
             }
-            case sdl.EventType.CONTROLLERBUTTONUP: {
+            case .CONTROLLERBUTTONUP: {
                 which_controller := sdl.GameControllerGetPlayerIndex(sdl.GameControllerFromInstanceID(e.cbutton.which))
                 controller := input.controllers[which_controller]
                 action := controller.controller_map[auto_cast e.cbutton.button]
@@ -447,13 +448,13 @@ handle_input :: proc(input: ^Input) -> bool {
                 controller.controller_held[action] = false
                 continue
             }
-            case sdl.EventType.MOUSEMOTION: {
+            case .MOUSEMOTION: {
                 mouse_state := sdl.GetMouseState(&x, &y)
                 input.mouse_delta = { x - input.mouse_position.x, y - input.mouse_position.y }
                 input.mouse_position = { x,y }
                 continue
             }
-            case sdl.EventType.MOUSEWHEEL: {
+            case .MOUSEWHEEL: {
                 input.mouse_wheel = { e.wheel.x, e.wheel.y }
                 continue
             }
