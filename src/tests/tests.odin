@@ -14,8 +14,10 @@ import fmt "core:fmt"
 import math "core:math"
 
 rendering_test :: proc() {
-	rendering := r.initRendering()
-	input := i.initInput()
+    engine := e.initEngine(true)
+    defer e.deinitEngine(engine)
+	rendering := engine.rendering
+	input := engine.input
 
 	r.load_default_font(rendering, "./assets/Font/PressStart2P.ttf", 32)
 	farmer_key := r.load_and_save_texture(rendering, "./assets/Images/farmer.png")
@@ -50,7 +52,7 @@ rendering_test :: proc() {
 
     astronaut_key := r.load_and_save_texture(rendering, "./assets/Images/astronaut.png");
 
-	for !i.handle_input(input) {
+	for !i.handle_input(input) && !input.escape_pressed {
 		x := input.mouse_position.x
 		y := input.mouse_position.y
 		now = sdl.GetTicks();
@@ -105,27 +107,23 @@ to_string :: proc(foo: $T) -> cstring {
 }
 
 audio_test :: proc() {
-
     engine := e.initEngine(true)
-	// TODO(Jonas): Move into initEngine call
-    audio := a.initAudioManager()
-    input := engine.input
-    rendering := engine.rendering
-
+    defer e.deinitEngine(engine)
+    rendering, input, audio_manager := e.get_components(engine)
 
 	r.load_default_font(rendering, "./assets/Font/PressStart2P.ttf", 32)
-	boing_audio_id := a.load_and_save_sound_effect(audio, "./assets/Sounds/boing.wav")
-	success, elevator_music_audio_id := a.load_and_save_music(audio, "./assets/Sounds/beat.wav")
+	boing_audio_id := a.load_and_save_sound_effect(audio_manager, "./assets/Sounds/345689__inspectorj__comedic-boing-a.wav")
+	success, elevator_music_audio_id := a.load_and_save_music(audio_manager, "./assets/Sounds/242080__orangefreesounds__lounge-ambient-music-loop.wav")
 	fmt.println(boing_audio_id)
 	fmt.println(elevator_music_audio_id)
-	for !i.handle_input(input) {
+	for !i.handle_input(input) && !input.escape_pressed {
 		
 		r.draw_text(rendering, "Press X to boing", r.WHITE, 25, 25, 25, nil);
 		r.draw_text(rendering, "Press D to play smooth muzak.", r.WHITE, 25, 25, 55, nil);
 		r.show(rendering);
 
 		if i.is_key_pressed(input, sdl.Keycode.x) {
-			a.play_sound(audio, boing_audio_id)
+			a.play_sound(audio_manager, boing_audio_id)
 		}
 
 		if i.is_key_pressed(input, sdl.Keycode.d) {
@@ -133,7 +131,7 @@ audio_test :: proc() {
 				if a.is_music_paused() do a.resume_music()
 				else do a.pause_music()
 			} else {
-				a.play_music(audio, elevator_music_audio_id, -1);
+				a.play_music(audio_manager, elevator_music_audio_id, -1);
 			}
 		}
 	}
@@ -173,8 +171,8 @@ input_test :: proc() {
     }
 
     engine := e.initEngine(true)
-    input := engine.input
-    rendering := engine.rendering
+    defer e.deinitEngine(engine)
+    rendering, input, audio_manager := e.get_components(engine)
     
     input.controllers[0].controller_map[sdl.GameControllerButton.B] = auto_cast UserAction.Attack;
     input.controllers[0].controller_map[sdl.GameControllerButton.A] = auto_cast UserAction.Jump;
@@ -193,7 +191,7 @@ input_test :: proc() {
     i.bind_controller_button_to_action(input, sdl.GameControllerButton.A, auto_cast UserAction.Attack, 0);
     i.bind_controller_button_to_action(input, sdl.GameControllerButton.B, auto_cast UserAction.Jump, 0);
 
-    for !i.handle_input(input) {
+	for !i.handle_input(input) && !input.escape_pressed {
         if input.escape_pressed do break
 
         if (i.is_pressed(input, auto_cast UserAction.Jump, true, 0)) {
@@ -256,9 +254,9 @@ input_test :: proc() {
         r.draw_text(rendering, "Key", r.GREEN, 25, 250, 500, font)
         r.draw_text(rendering, "Key 2", r.GREEN, 25, 500, 500, font)
         r.draw_text(rendering, "Controller", r.GREEN, 25, 750, 500, font)
+        sdl.SetRenderDrawColor(rendering.renderer, 255, 255, 255, 255);
 
         k := 0;
-        sdl.SetRenderDrawColor(rendering.renderer, 255, 255, 255, 255);
         for act in UserAction {
             action_name := useraction_to_name(act)
             mapped_count := MAX_KEYS_PER_ACTION
@@ -330,12 +328,11 @@ input_test :: proc() {
 
             k += 1;
         }
-
         sdl.SetRenderDrawColor(rendering.renderer, 0, 0, 0, 255);
 
-        sdl.RenderPresent(rendering.renderer);
-        sdl.RenderClear(rendering.renderer);
+        r.show(rendering)
     }
+
 }
 
 mouse_button_to_name :: proc(button: u8) -> string {

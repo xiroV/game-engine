@@ -15,8 +15,8 @@ when WITH_TESTS {
 
     main :: proc() {
         tests.input_test()
-        // tests.rendering_test()
-        // tests.audio_test()
+        tests.rendering_test()
+        tests.audio_test()
     }
 
 } else {
@@ -38,7 +38,7 @@ main :: proc() {
     append(&list, c)
     input: inp.Input
     engine := eng.initEngine()
-    inp.start_rebind_keyboard_action(engine.input, 0, sdl.Keycode.UNKNOWN)
+    inp.start_rebind_keyboard_action(engine.input, 0, inp.Keycode.UNKNOWN)
     fmt.println(engine.input.escape_pressed)
     for inp.handle_input(engine.input) {}
     ttf.Quit()

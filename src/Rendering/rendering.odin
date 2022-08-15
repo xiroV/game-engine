@@ -106,6 +106,7 @@ draw_text :: proc(rendering: ^Rendering, text: string, color: sdl.Color, font_si
 	sdl.RenderCopy(rendering.renderer, texture, nil, &position)
 	sdl.DestroyTexture(texture)
 	sdl.FreeSurface(textSurface)
+	strings.destroy_builder(&str)
 }
 
 load_and_save_texture :: proc(using rendering: ^Rendering, path: cstring) -> (key: int) {

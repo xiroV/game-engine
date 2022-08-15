@@ -164,6 +164,21 @@ initInput :: proc() -> ^Input {
     return input
 }
 
+deinitInput :: proc(input: ^Input) {
+    free(input.key_map)
+    free(input.key_held)
+    free(input.key_pressed)
+    free(input.direct_key_held)
+    free(input.direct_key_pressed)
+    free(input.direct_mouse_held)
+    free(input.direct_mouse_pressed)
+    free(input.mouse_map)
+    free(input.mouse_pressed)
+    free(input.mouse_held)
+    free(input.controllers)
+    free(input)
+}
+
 is_held :: proc(input: ^Input, a: i32, with_controller: bool, controller: i32) -> bool {
     controller_down := (with_controller & input.controllers[controller].controller_held[a])
     return controller_down || input.mouse_held[a] || input.key_held[a]
@@ -247,10 +262,6 @@ unassign_controller :: proc(input: ^Input, which: sdl.JoystickID) -> bool {
 
     sdl.GameControllerClose(controller)
     return false
-}
-
-deinitInput :: proc(input: ^Input) {
-    fmt.println("deinit input TODO")
 }
 
 bind_key_to_action :: proc(input: ^Input, key: sdl.Keycode, action: i32) {
